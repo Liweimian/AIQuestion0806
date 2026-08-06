@@ -22,8 +22,13 @@ npm run build
 
 ## GitHub Pages 部署
 
-推送 `main` 分支后会自动部署，访问地址：
+访问地址：https://liweimian.github.io/AIQuestion0806/
 
-https://liweimian.github.io/AIQuestion0806/
+推送 `main` 后会自动把静态文件发布到 `gh-pages` 分支。
 
-首次部署请在仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
+**一次性设置（Settings → Pages）：**
+
+- Source：**Deploy from a branch**
+- Branch：**gh-pages** / **/(root)**
+
+若 Actions 里 `deploy-pages` 一直卡在队列，用上面这种方式即可，不依赖慢速的 Pages 队列。
