@@ -77,10 +77,6 @@ function showToast(message) {
   showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1600);
 }
 
-function toneClass(tone) {
-  return ["green", "blue", "violet"].includes(tone) ? tone : "";
-}
-
 function renderBankNav() {
   const sideKeyword = document.querySelector("#bankSideSearch")?.value.trim().toLowerCase() || "";
   bankSideSearchWrap.hidden = sideView === "chapters";
@@ -102,9 +98,9 @@ function questionCard(question) {
   const selected = selectedQuestions.has(question.id);
   const saved = savedQuestions.has(question.id);
   return `<article class="question-card ${selected ? "selected" : ""}" data-question-id="${question.id}">
-    <div class="question-source-bar ${toneClass(question.tone)}"><b>${question.sourceDetail}</b><span class="citation">引用：${question.citation}</span></div>
     <div class="question-card-body">
-      <div class="question-tags">${question.tags.map(tag => `<span class="question-tag ${tag === "创新题" ? "creative" : ""}">${tag}</span>`).join("")}<span class="question-meta">${question.type} / ${question.difficulty} / ${question.minutes}分钟</span></div>
+      <div class="question-source-tags"><span class="question-source-type">${question.source}</span><span class="question-source-detail">${question.sourceDetail}</span><span class="question-source-cite"><i class="ri-link-m"></i>引用 ${question.citation}</span></div>
+      <div class="question-tags">${question.tags.map(tag => `<span class="question-tag">${tag}</span>`).join("")}<span class="question-meta">${question.type} / ${question.difficulty} / ${question.minutes}分钟</span></div>
       <p class="question-text">${question.title.replaceAll("\n", "<br />")}</p>
       <footer class="question-card-foot">
         <span class="question-knowledge">知识点：${question.skill} <i>/</i> 核心素养：${question.ability}</span>
