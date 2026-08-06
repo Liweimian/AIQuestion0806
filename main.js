@@ -155,7 +155,7 @@ function homepageSeriesSection() {
           <div class="book-resource">
             <div class="book-detail">
               <div class="book-series-tabs" role="tablist" aria-label="同步练习系列">
-                <button class="active" type="button" role="tab" aria-selected="true" data-book-tab="duowei">多维导学案</button>
+                <button class="active" type="button" role="tab" aria-selected="true" data-book-tab="duowei"><span class="book-tab-icon" aria-hidden="true"><i class="ri-book-open-line"></i></span>多维导学案</button>
                 <button type="button" role="tab" aria-selected="false" data-book-tab="quanpin">全品学练考</button>
               </div>
               <div class="book-tab-panel active" data-book-panel="duowei" role="tabpanel">
@@ -172,7 +172,7 @@ function homepageSeriesSection() {
                   ${bookLessonRow(3, "第2课时 棱柱、圆柱、圆锥的展开与折叠", "15 题 · 中等", 695)}
                 </div>
               </div>
-              <button class="book-view-all" type="button" data-open-filter="workbook">全部练习 <i class="ri-arrow-right-s-line"></i></button>
+              <button class="book-view-all" type="button" data-open-filter="workbook">更多系列题单 <i class="ri-arrow-right-s-line"></i></button>
             </div>
           </div>
           <div class="classification-resources">
@@ -188,7 +188,7 @@ function homepageSeriesSection() {
         <article class="resource-lane paper-lane">
           <div class="paper-card-grid">
             <article class="paper-feature" data-topic="t2" tabindex="0" role="button" aria-label="查看南山区七年级上期末数学试卷">
-              <span class="paper-kicker"><i class="ri-thumb-up-line"></i> 本周首选 · 推荐给你 <em class="exam-tag">期末</em></span>
+              <span class="paper-kicker"><i class="ri-thumb-up-line"></i> 本周推荐 <em class="exam-tag">期末</em></span>
               <b>2025—2026 学年广东省深圳市南山区七年级（上）期末数学试卷</b>
               <p class="paper-match-reason"><i class="ri-equalizer-2-line" aria-label="推荐依据"></i><span>教学进度一致，题型结构相似，与本校近三次考试难度偏差小于 8%</span></p>
               <footer class="paper-metrics"><span><i class="ri-eye-line"></i>8,642 浏览</span><span><i class="ri-download-line"></i>1,206 下载</span></footer>
@@ -370,7 +370,7 @@ function applyFeedFilters() {
 function bindContentEvents(root = document) {
   root.querySelectorAll("[data-book-tab]").forEach(button => button.addEventListener("click", () => {
     const tab = button.dataset.bookTab;
-    const container = button.closest(".book-detail");
+    const container = button.closest(".book-resource");
     if (!container) return;
     container.querySelectorAll("[data-book-tab]").forEach(item => {
       const active = item === button;
