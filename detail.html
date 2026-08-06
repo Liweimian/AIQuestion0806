@@ -23,7 +23,8 @@
     <div class="detail-shell">
       <aside id="directoryPanel" class="directory-panel" aria-label="资源目录">
         <button id="directoryToggle" class="directory-toggle" type="button" aria-expanded="false" aria-controls="directoryTree">
-          <i class="ri-list-unordered"></i><span>目录</span>
+          <span class="directory-toggle-label"><i class="ri-list-unordered"></i><span>目录</span></span>
+          <i class="ri-sidebar-fold-line directory-toggle-fold" aria-hidden="true"></i>
         </button>
         <div class="directory-head">
           <small id="directoryKicker">教材目录</small>
@@ -147,6 +148,6 @@
 
     <div id="directoryMask" class="directory-mask" hidden></div>
     <div id="toast" class="toast" role="status"></div>
-    <script type="module" src="./detail.js"></script>
+    <script defer src="./detail.js"></script>
   </body>
 </html>

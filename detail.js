@@ -19,8 +19,27 @@ const directories = {
     active:"正数和负数"
   },
   series: {
-    kicker:"系列目录", title:"本地能力过关系列", summary:"同步、专项与检测 · 共 26 份题单",
-    breadcrumb:["教辅题单","本地能力过关系列"],
+    kicker:"练习册目录", title:"多维导学案 · 七年级上册", summary:"共 6 章 · 36 课时",
+    breadcrumb:["多维导学案","第一章 丰富的图形世界"],
+    workbook: true,
+    chapters:[
+      {
+        id:"407962", title:"第一章 丰富的图形世界", expanded:true,
+        lessons:[
+          { title:"第 1 课时 生活中的立体图形（1）" },
+          { title:"第 2 课时 生活中的立体图形（2）" },
+          { title:"第 3 课时 从立体图形到平面图形（1）——正方体的展开与折叠" },
+          { title:"第 4 课时 从立体图形到平面图形（2）——柱体、锥体的展开与折叠", active:true },
+          { title:"第 5 课时 从立体图形到平面图形（3）——截一个几何体" },
+          { title:"第 6 课时 从三个方向看物体的形状" }
+        ]
+      },
+      { id:"407963", title:"第二章 有理数及其运算", expanded:false, lessons:[] },
+      { id:"407964", title:"第三章 整式及其加减", expanded:false, lessons:[] },
+      { id:"407965", title:"第四章 基本平面图形", expanded:false, lessons:[] },
+      { id:"407966", title:"第五章 一元一次方程", expanded:false, lessons:[] },
+      { id:"407967", title:"第六章 数据的收集与整理", expanded:false, lessons:[] }
+    ],
     groups:[
       ["七上 · 有理数",["概念基础过关","运算基础过关","有理数单元检测"]],
       ["七上 · 整式",["整式同步巩固","整式易错专项"]],
@@ -39,15 +58,13 @@ const directories = {
     ],
     active:"代数式的意义"
   },
+  special: {
+    standalone: true,
+    breadcrumb:["专项练习","专题训练"]
+  },
   paper: {
-    kicker:"试卷目录", title:"深圳真题 · 七年级数学", summary:"近三年 · 126 套本地真题",
-    breadcrumb:["试卷","深圳真题"],
-    groups:[
-      ["同步考试",["单元测试","期中试卷","期末试卷"]],
-      ["中考",["深圳中考真题","区级一模","区级二模"]],
-      ["筛选",["2026 年","2025 年","2024 年"]]
-    ],
-    active:"深圳中考真题"
+    standalone: true,
+    breadcrumb:["试卷","七年级数学"]
   }
 };
 
@@ -61,15 +78,50 @@ const related = [
 const params = new URLSearchParams(location.search);
 const topicId = params.get("topic") || "t8";
 const contextName = params.get("context") || "chapter";
-const topic = topicCatalog[topicId] || topicCatalog.t8;
+const catalogTopic = topicCatalog[topicId] || topicCatalog.t8;
+const topic = {
+  ...catalogTopic,
+  title: params.get("title") || catalogTopic.title,
+  focus: params.get("focus") || catalogTopic.focus,
+  reason: params.get("reason") || catalogTopic.reason,
+  questions: Number(params.get("questions") || catalogTopic.questions),
+  difficulty: params.get("difficulty") || catalogTopic.difficulty,
+  source: params.get("source") || catalogTopic.source,
+  usage: Number(params.get("usage") || catalogTopic.usage)
+};
 const context = directories[contextName] || directories.chapter;
 
+function renderWorkbookDirectory() {
+  document.querySelector("#directoryTree").innerHTML = context.chapters.map(chapter => `
+    <section class="tree-group workbook-chapter ${chapter.expanded ? "open" : ""}">
+      <button type="button" class="chapter-row">
+        <i class="ri-arrow-${chapter.expanded ? "down" : "right"}-s-line"></i>
+        <span>${chapter.title}</span>
+      </button>
+      <div class="tree-leaves"${chapter.expanded ? "" : " hidden"}>
+        ${chapter.lessons.map(lesson => `
+          <button class="tree-lesson ${lesson.active ? "active" : ""}" type="button">
+            <span class="lesson-title">${lesson.title}</span>
+          </button>`).join("")}
+      </div>
+    </section>`).join("");
+}
+
 function renderDirectory() {
+  if (context.standalone) {
+    document.querySelector("#breadcrumbContext").textContent = context.breadcrumb[0];
+    document.querySelector("#breadcrumbLeaf").textContent = topic.title;
+    return;
+  }
   document.querySelector("#directoryKicker").textContent = context.kicker;
   document.querySelector("#directoryTitle").textContent = context.title;
   document.querySelector("#directorySummary").textContent = context.summary;
   document.querySelector("#breadcrumbContext").textContent = context.breadcrumb[0];
   document.querySelector("#breadcrumbLeaf").textContent = context.breadcrumb[1];
+  if (context.workbook) {
+    renderWorkbookDirectory();
+    return;
+  }
   document.querySelector("#directoryTree").innerHTML = context.groups.map(([group, leaves], groupIndex) => `
     <section class="tree-group">
       <button type="button"><i class="ri-arrow-${groupIndex === 0 ? "down" : "right"}-s-line"></i><span>${group}</span></button>
@@ -115,21 +167,55 @@ function showToast(message) {
   showToast.timer = setTimeout(() => toast.classList.remove("show"), 1700);
 }
 
+const recommendationPanel = document.querySelector(".recommendation-panel");
+const directoryPanel = document.querySelector("#directoryPanel");
+const directoryMask = document.querySelector("#directoryMask");
+const detailShell = document.querySelector(".detail-shell");
+const directoryToggle = document.querySelector("#directoryToggle");
+
+function setDirectoryOpen(open, mobile = false) {
+  if (!directoryPanel) return;
+  directoryPanel.classList.toggle("open", open);
+  detailShell.classList.toggle("directory-open", open && !mobile);
+  directoryToggle?.setAttribute("aria-expanded", String(open));
+  directoryMask.hidden = !open || !mobile;
+}
+
+function applyPageLayout() {
+  if (context.workbook) {
+    document.body.classList.add("workbook-detail");
+    detailShell?.classList.add("workbook-mode");
+    if (recommendationPanel) recommendationPanel.hidden = true;
+    setDirectoryOpen(true);
+    return;
+  }
+  if (context.standalone) {
+    document.body.classList.add("standalone-detail");
+    detailShell?.classList.add("standalone-mode");
+    if (directoryPanel) directoryPanel.hidden = true;
+    if (recommendationPanel) recommendationPanel.hidden = true;
+    document.querySelector("#mobileDirectory").hidden = true;
+  }
+}
+
 renderDirectory();
 renderTopic();
-renderRecommendations();
+if (!context.standalone) renderRecommendations();
+applyPageLayout();
 
 document.querySelectorAll(".tree-group > button").forEach(button => button.addEventListener("click", () => {
   const icon = button.querySelector("i");
   const leaves = button.nextElementSibling;
+  if (!leaves) return;
   const open = leaves.hidden;
   leaves.hidden = !open;
-  icon.className = open ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line";
+  button.closest(".tree-group")?.classList.toggle("open", open);
+  if (icon) icon.className = open ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line";
 }));
 
-document.querySelectorAll(".tree-leaf").forEach(button => button.addEventListener("click", () => {
-  document.querySelectorAll(".tree-leaf").forEach(item => item.classList.toggle("active", item === button));
-  showToast(`已切换到「${button.textContent}」的题单`);
+document.querySelectorAll(".tree-leaf, .tree-lesson").forEach(button => button.addEventListener("click", () => {
+  document.querySelectorAll(".tree-leaf, .tree-lesson").forEach(item => item.classList.toggle("active", item === button));
+  showToast(`已切换到「${button.querySelector(".lesson-title")?.textContent.trim() || button.textContent.trim()}」的题单`);
 }));
 
 document.querySelector("#favoriteTopic").addEventListener("click", event => {
@@ -154,22 +240,10 @@ document.querySelectorAll("[data-related]").forEach(button => button.addEventLis
   location.href = `./detail.html?topic=${button.dataset.related}&context=${contextName}`;
 }));
 
-const directoryPanel = document.querySelector("#directoryPanel");
-const directoryMask = document.querySelector("#directoryMask");
-const detailShell = document.querySelector(".detail-shell");
-const directoryToggle = document.querySelector("#directoryToggle");
-
-function setDirectoryOpen(open, mobile = false) {
-  directoryPanel.classList.toggle("open", open);
-  detailShell.classList.toggle("directory-open", open && !mobile);
-  directoryToggle.setAttribute("aria-expanded", String(open));
-  directoryMask.hidden = !open || !mobile;
-}
-
-directoryToggle.addEventListener("click", () => {
+directoryToggle?.addEventListener("click", () => {
   setDirectoryOpen(!directoryPanel.classList.contains("open"));
 });
-document.querySelector("#mobileDirectory").addEventListener("click", () => {
+document.querySelector("#mobileDirectory")?.addEventListener("click", () => {
   setDirectoryOpen(true, true);
 });
 directoryMask.addEventListener("click", () => {

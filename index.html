@@ -31,23 +31,37 @@
       </section>
 
       <div class="home-entry-row">
-        <form id="aiStarter" class="ai-starter" aria-label="AI 生成题单">
-          <span class="ai-starter-badge" aria-hidden="true"><i class="ri-sparkling-2-line"></i><span>AI</span></span>
-          <input id="aiStarterInput" class="ai-starter-input" placeholder="描述你想要的题单，例如：七上有理数易错题，15 题，中等难度" autocomplete="off" />
-          <button id="aiStarterAdd" class="ai-starter-icon" type="button" aria-label="添加材料"><i class="ri-add-line"></i></button>
-          <button id="aiStarterVoice" class="ai-voice-button" type="button" aria-label="语音输入"><i class="ri-mic-line"></i></button>
-          <button id="aiStarterSubmit" class="ai-starter-submit" type="submit" aria-label="生成题单"><i class="ri-arrow-up-line"></i></button>
-        </form>
+        <div class="ai-starter-shell">
+          <form id="aiStarter" class="ai-starter" aria-label="AI 生成题单">
+            <span class="ai-starter-badge" aria-hidden="true"><i class="ri-sparkling-2-line"></i><span>AI</span></span>
+            <input id="aiStarterInput" class="ai-starter-input" placeholder="描述你想要的题单，例如：七上有理数易错题，15 题，中等难度" autocomplete="off" />
+            <button id="aiStarterAdd" class="ai-starter-icon" type="button" aria-label="添加材料"><i class="ri-add-line"></i></button>
+            <button id="aiStarterVoice" class="ai-voice-button" type="button" aria-label="语音输入"><i class="ri-mic-line"></i></button>
+            <button id="aiStarterSubmit" class="ai-starter-submit" type="submit" aria-label="生成题单"><i class="ri-arrow-up-line"></i></button>
+          </form>
+          <div id="aiStarterHints" class="ai-input-hints" hidden>
+            <p class="ai-input-hint-example">试试这样说：帮我组一份七年级有理数随堂练习，15 分钟，基础为主，加入 2 道易错题</p>
+            <div class="ai-input-hint-tags" role="list">
+              <button type="button" data-ai-hint="找题">找题</button>
+              <button type="button" data-ai-hint="找卷">找卷</button>
+              <button type="button" data-ai-hint="AI 组卷">AI 组卷</button>
+              <button type="button" data-ai-hint="AI 组练习">AI 组练习</button>
+              <button type="button" data-ai-hint="AI 改编">AI 改编</button>
+              <button type="button" data-ai-hint="AI 命题">AI 命题</button>
+              <button type="button" data-ai-hint="AI 录题">AI 录题</button>
+            </div>
+          </div>
+        </div>
 
         <aside class="bank-stats-card" aria-label="题库概览">
           <span class="bank-stats-item">
             <strong id="statTopicTotal">—</strong>
             <small>题单总量</small>
           </span>
-          <span class="bank-stats-item is-new">
+          <button class="bank-stats-item is-new" type="button" data-stat-jump aria-label="查看最新入库的题单">
             <strong id="statWeeklyNew">—</strong>
-            <small>7 天新增题单</small>
-          </span>
+            <small>7 天新增题单 <i class="ri-arrow-right-s-line"></i></small>
+          </button>
           <span class="bank-stats-item">
             <strong id="statQuestionTotal">—</strong>
             <small>题目总量</small>
@@ -67,12 +81,26 @@
       <div id="contentFeed"></div>
     </main>
 
-    <form id="aiDock" class="ai-dock" aria-label="AI 生成题单" aria-hidden="true" hidden>
+    <div class="ai-dock-shell">
+      <div id="aiDockHints" class="ai-input-hints ai-dock-hints" hidden>
+        <p class="ai-input-hint-example">试试这样说：帮我组一份七年级有理数随堂练习，15 分钟，基础为主，加入 2 道易错题</p>
+        <div class="ai-input-hint-tags" role="list">
+          <button type="button" data-ai-hint="找题">找题</button>
+          <button type="button" data-ai-hint="找卷">找卷</button>
+          <button type="button" data-ai-hint="AI 组卷">AI 组卷</button>
+          <button type="button" data-ai-hint="AI 组练习">AI 组练习</button>
+          <button type="button" data-ai-hint="AI 改编">AI 改编</button>
+          <button type="button" data-ai-hint="AI 命题">AI 命题</button>
+          <button type="button" data-ai-hint="AI 录题">AI 录题</button>
+        </div>
+      </div>
+      <form id="aiDock" class="ai-dock" aria-label="AI 生成题单" aria-hidden="true" hidden>
       <button id="aiAdd" class="ai-dock-icon" type="button" aria-label="添加材料"><i class="ri-add-line"></i></button>
       <input id="aiQuickInput" class="ai-quick-input" placeholder="描述你想要的题单，例如：七上有理数易错题，15 题，中等难度" autocomplete="off" />
       <button id="aiVoice" class="ai-voice-button" type="button" aria-label="语音输入"><i class="ri-mic-line"></i></button>
       <button id="openAi" class="ai-dock-action" type="submit" aria-label="生成题单"><i class="ri-arrow-up-line"></i></button>
     </form>
+    </div>
 
     <div id="aiMask" class="modal-mask" hidden>
       <section class="ai-modal" role="dialog" aria-modal="true" aria-labelledby="aiModalTitle">

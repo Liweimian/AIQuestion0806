@@ -89,7 +89,7 @@ function topicTags(topic) {
   if (/压轴|提高|培优/.test(`${topic.title} ${topic.focus}`)) tags.push("压轴题");
   if (/教研|学校|校/.test(`${topic.source} ${topic.author?.school || ""}`)) tags.push("飞象教研");
   if (!tags.length) tags.push(topic.tag === "special" ? "专题练习" : "同步练习");
-  return [...new Set(tags)].slice(0, 3);
+  return [...new Set(tags)].slice(0, 1);
 }
 
 function topicBrief(topic) {
@@ -143,36 +143,53 @@ function topicCard(topic, options = "default") {
     </article>`;
 }
 
+function bookLessonRow(index, title, meta, usage) {
+  return `<a class="book-topic-row" href="./detail.html?topic=t9&context=series"><i>${String(index).padStart(2, "0")}</i><span><b>${title}</b><small>${meta}</small></span><strong>${usage.toLocaleString()} 人使用</strong></a>`;
+}
+
 function homepageSeriesSection() {
   return `
     <section class="resource-showcase" aria-label="备课资源推荐">
       <div class="resource-showcase-grid">
         <article class="resource-lane sync-lane">
-          <button class="book-resource" data-topic="t9">
-            <span class="sync-resource-mark">
+          <div class="book-resource">
+            <div class="sync-resource-mark">
               <span class="sync-mark-top"><i class="ri-layout-4-line"></i><em>01</em></span>
               <b>七年级上册</b>
               <strong>同步练习资源</strong>
               <small>当前章节 · 有理数</small>
               <span class="sync-progress"><i></i></span>
-            </span>
-            <span class="book-detail">
-              <span class="book-detail-heading"><span><b>有理数同步精练</b></span></span>
-              <span class="book-topic-list">
-                <span><i>01</i><span><b>有理数运算基础过关与易错自测</b><small>20 题 · 中等</small></span><strong>1,143 人使用</strong></span>
-                <span><i>02</i><span><b>有理数概念：数轴、相反数与绝对值过关</b><small>16 题 · 基础</small></span><strong>968 人使用</strong></span>
-                <span><i>03</i><span><b>有理数单元检测：运算、应用与探究</b><small>22 题 · 中等</small></span><strong>1,046 人使用</strong></span>
-              </span>
-            </span>
-          </button>
-          <div class="classification-resources">
-            <div class="classification-heading"><span class="resource-type-tag">真题分类汇编</span></div>
-            <button class="resource-list-item" data-topic="t4"><span><b>2023—2025 深圳重点校初一（上）期中数学汇编：直线、射线、线段</b><small>图形初步认识 · 24 题</small></span><i class="ri-arrow-right-s-line"></i></button>
-            <button class="resource-list-item" data-topic="t23"><span><b>2023—2025 深圳各区初一（上）期末数学汇编：一元一次方程</b><small>高频考点 · 26 题</small></span><i class="ri-arrow-right-s-line"></i></button>
-            <button class="resource-list-item" data-topic="t1"><span><b>2023—2025 深圳各区初一（上）期中数学汇编：有理数运算</b><small>易错题分类 · 28 题</small></span><i class="ri-arrow-right-s-line"></i></button>
-            <button class="resource-list-item" data-topic="t10"><span><b>2023—2025 深圳重点校初一（上）期中数学汇编：整式的加减</b><small>核心题型 · 22 题</small></span><i class="ri-arrow-right-s-line"></i></button>
+            </div>
+            <div class="book-detail">
+              <div class="book-series-tabs" role="tablist" aria-label="同步练习系列">
+                <button class="active" type="button" role="tab" aria-selected="true" data-book-tab="duowei">多维导学案</button>
+                <button type="button" role="tab" aria-selected="false" data-book-tab="quanpin">全品学练考</button>
+              </div>
+              <div class="book-tab-panel active" data-book-panel="duowei" role="tabpanel">
+                <div class="book-topic-list">
+                  ${bookLessonRow(1, "第 1 课时 生活中的立体图形（1）", "12 题 · 基础", 864)}
+                  ${bookLessonRow(2, "生活中的立体图形（2）", "10 题 · 基础", 742)}
+                  ${bookLessonRow(3, "从立体图形到平面图形（1）——正方体的展开与折叠", "14 题 · 中等", 618)}
+                </div>
+              </div>
+              <div class="book-tab-panel" data-book-panel="quanpin" role="tabpanel" hidden>
+                <div class="book-topic-list">
+                  ${bookLessonRow(1, "第1课时 认识生活中的立体图形", "11 题 · 基础", 936)}
+                  ${bookLessonRow(2, "第2课时 立体图形的构成", "13 题 · 基础", 812)}
+                  ${bookLessonRow(3, "第2课时 棱柱、圆柱、圆锥的展开与折叠", "15 题 · 中等", 695)}
+                </div>
+              </div>
+              <button class="book-view-all" type="button" data-open-filter="workbook">全部练习 <i class="ri-arrow-right-s-line"></i></button>
+            </div>
           </div>
-          <button class="module-more" data-open-filter="workbook">查看更多同步资源 <i class="ri-arrow-right-s-line"></i></button>
+          <div class="classification-resources">
+            <div class="classification-heading"><span class="resource-type-tag">章节真题汇编</span></div>
+            <button class="resource-list-item" data-topic="t4"><span><b>2023—2025 深圳重点校初一（上）期中数学汇编：一般的正方体展开图</b><small>图形初步认识 · 24 题</small></span><i class="ri-arrow-right-s-line"></i></button>
+            <button class="resource-list-item" data-topic="t23"><span><b>2023—2025 深圳各区初一（上）期末数学汇编：立体图形的识别与分类</b><small>高频考点 · 26 题</small></span><i class="ri-arrow-right-s-line"></i></button>
+            <button class="resource-list-item" data-topic="t1"><span><b>2023—2025 深圳各区初一（上）期中数学汇编：点、线、面、体</b><small>易错题分类 · 28 题</small></span><i class="ri-arrow-right-s-line"></i></button>
+            <button class="resource-list-item" data-topic="t10"><span><b>2023—2025 深圳重点校初一（上）期中数学汇编：几何直观空间观念</b><small>核心题型 · 22 题</small></span><i class="ri-arrow-right-s-line"></i></button>
+          </div>
+          <button class="module-more" data-open-filter="workbook">更多章节真题汇编 <i class="ri-arrow-right-s-line"></i></button>
         </article>
 
         <article class="resource-lane paper-lane">
@@ -183,7 +200,7 @@ function homepageSeriesSection() {
               <p class="paper-match-reason"><i class="ri-equalizer-2-line" aria-label="推荐依据"></i><span>教学进度一致，题型结构相似，与本校近三次考试难度偏差小于 8%</span></p>
               <footer class="paper-metrics"><span><i class="ri-eye-line"></i>8,642 浏览</span><span><i class="ri-download-line"></i>1,206 下载</span></footer>
             </article>
-            <article class="paper-mini-card peer-card" data-topic="t39" tabindex="0" role="button"><div class="mini-card-top"><span><em>同层次校</em><em class="exam-tag">期中</em></span></div><b>2025—2026 学年广东省深圳市龙岗区实验学校七年级（上）期中数学试卷</b><span><small><i class="ri-eye-line"></i>3,286 浏览</small><small><i class="ri-download-line"></i>684 下载</small></span></article>
+            <article class="paper-mini-card peer-card" data-topic="t39" tabindex="0" role="button"><div class="mini-card-top"><span><em>同类校</em><em class="exam-tag">期中</em></span></div><b>2025—2026 学年广东省深圳市龙岗区实验学校七年级（上）期中数学试卷</b><span><small><i class="ri-eye-line"></i>3,286 浏览</small><small><i class="ri-download-line"></i>684 下载</small></span></article>
             <button class="paper-mini-card regional-card" data-topic="t14"><span class="mini-card-top"><em>区统考</em><em class="exam-tag">期中</em></span><b>2025—2026 学年广东省深圳市福田区七年级（上）期中数学试卷</b><span><small><i class="ri-eye-line"></i>5,462 浏览</small><small><i class="ri-download-line"></i>932 下载</small></span></button>
             <button class="paper-mini-card group-card" data-topic="t37"><span class="mini-card-top"><em>集团联考</em><em class="exam-tag">期中</em></span><b>2025—2026 学年广东省深圳市龙华区实验教育集团七年级（上）期中数学试卷</b><span><small><i class="ri-eye-line"></i>4,108 浏览</small><small><i class="ri-download-line"></i>756 下载</small></span></button>
             <button class="paper-mini-card famous-card" data-topic="t36"><span class="mini-card-top"><em>名校试卷</em><em class="exam-tag">期中</em></span><b>2025—2026 学年广东省深圳中学七年级（上）期中数学试卷</b><span><small><i class="ri-eye-line"></i>6,735 浏览</small><small><i class="ri-download-line"></i>1,184 下载</small></span></button>
@@ -358,6 +375,21 @@ function applyFeedFilters() {
 }
 
 function bindContentEvents(root = document) {
+  root.querySelectorAll("[data-book-tab]").forEach(button => button.addEventListener("click", () => {
+    const tab = button.dataset.bookTab;
+    const container = button.closest(".book-detail");
+    if (!container) return;
+    container.querySelectorAll("[data-book-tab]").forEach(item => {
+      const active = item === button;
+      item.classList.toggle("active", active);
+      item.setAttribute("aria-selected", String(active));
+    });
+    container.querySelectorAll("[data-book-panel]").forEach(panel => {
+      const active = panel.dataset.bookPanel === tab;
+      panel.hidden = !active;
+      panel.classList.toggle("active", active);
+    });
+  }));
   root.querySelectorAll("[data-topic]").forEach(element => {
     const open = () => openTopic(element.dataset.topic);
     element.addEventListener("click", event => { if (event.target.closest("[data-bookmark], [data-series]")) return; open(); });
@@ -419,8 +451,19 @@ function openSeries(seriesName) {
 function openTopic(id) {
   const topic = byId[id];
   if (!topic) return;
-  const context = topic.tag === "workbook" ? "series" : topic.tag === "paper" ? "paper" : topic.tag === "special" ? "knowledge" : "chapter";
-  location.href = `./detail.html?topic=${encodeURIComponent(id)}&context=${context}`;
+  const context = topic.tag === "workbook" ? "series" : topic.tag === "paper" ? "paper" : topic.tag === "special" ? "special" : "chapter";
+  const qs = new URLSearchParams({
+    topic: id,
+    context,
+    title: topic.title,
+    focus: topic.focus,
+    reason: topic.reason,
+    questions: String(topic.questions),
+    difficulty: topic.difficulty,
+    source: topic.source,
+    usage: String(topic.usage)
+  });
+  location.href = `./detail.html?${qs.toString()}`;
 }
 
 function showAiDock(visible) {
@@ -480,6 +523,14 @@ function renderBankStats() {
 renderBankStats();
 render();
 
+document.querySelector("[data-stat-jump]")?.addEventListener("click", () => {
+  if (!document.querySelector("[data-square-section]")) setMainFilter("all");
+  document.querySelector('[data-feed-key="sort"][data-feed-value="latest"]')?.click();
+  const square = document.querySelector("[data-square-section]");
+  if (square) square.scrollIntoView({ behavior: "smooth", block: "start" });
+  showToast("已按最新入库排序");
+});
+
 window.addEventListener("scroll", () => {
   hasUserScrolled = window.scrollY > 160;
   const square = document.querySelector("[data-square-section]");
@@ -506,8 +557,48 @@ function bindAiForm(formSelector, inputSelector, addSelector, voiceSelector) {
   document.querySelector(voiceSelector).addEventListener("click", event => { event.currentTarget.classList.toggle("active"); showToast(event.currentTarget.classList.contains("active") ? "正在听，请说出题单要求" : "已停止语音输入"); });
 }
 
+const aiHintExamples = {
+  "找题": "帮我找七年级有理数易错题，15 题，中等难度",
+  "找卷": "帮我找深圳龙岗区七年级上期末数学试卷",
+  "AI 组卷": "帮我组一份七年级有理数单元检测卷，45 分钟，中等难度",
+  "AI 组练习": "帮我组一份七年级有理数随堂练习，15 分钟，基础为主，加入 2 道易错题",
+  "AI 改编": "把这份题单改编成深圳情境题，考点不变",
+  "AI 命题": "帮我命制 5 道有理数应用题，中等难度",
+  "AI 录题": "帮我把这张试卷图片录入为题单"
+};
+
+function setupAiHints(inputSelector, hintsSelector) {
+  const input = document.querySelector(inputSelector);
+  const hints = document.querySelector(hintsSelector);
+  if (!input || !hints) return;
+  let blurTimer = 0;
+  const show = () => { clearTimeout(blurTimer); hints.hidden = false; };
+  const hide = () => { blurTimer = window.setTimeout(() => { hints.hidden = true; }, 120); };
+  input.addEventListener("focus", show);
+  input.addEventListener("click", show);
+  input.addEventListener("blur", hide);
+  hints.addEventListener("mousedown", event => {
+    if (event.target.closest("[data-ai-hint]")) event.preventDefault();
+  });
+  hints.addEventListener("click", event => {
+    const button = event.target.closest("[data-ai-hint]");
+    if (!button) return;
+    const sample = aiHintExamples[button.dataset.aiHint] || button.dataset.aiHint;
+    input.value = sample;
+    syncAiInputs(sample, input.id);
+    input.focus();
+    hints.hidden = true;
+  });
+}
+
 bindAiForm("#aiStarter", "#aiStarterInput", "#aiStarterAdd", "#aiStarterVoice");
 bindAiForm("#aiDock", "#aiQuickInput", "#aiAdd", "#aiVoice");
+setupAiHints("#aiStarterInput", "#aiStarterHints");
+setupAiHints("#aiQuickInput", "#aiDockHints");
+document.addEventListener("click", event => {
+  if (event.target.closest(".ai-starter-shell, .ai-dock-shell")) return;
+  document.querySelectorAll(".ai-input-hints").forEach(panel => { panel.hidden = true; });
+});
 document.querySelector("#closeAi").addEventListener("click", closeAi);
 aiMask.addEventListener("click", event => { if (event.target === aiMask) closeAi(); });
 document.querySelector("#generateList").addEventListener("click", event => { const button = event.currentTarget; button.disabled = true; button.querySelector("span").textContent = "正在生成题单结构…"; setTimeout(() => { document.querySelector("#aiForm").hidden = true; document.querySelector("#aiResult").hidden = false; button.disabled = false; button.querySelector("span").textContent = "生成完整题单"; }, 850); });
