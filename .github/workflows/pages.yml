@@ -1,9 +1,8 @@
+# 仅在 Pages Source = GitHub Actions 时生效。
+# 若 Source 仍是 Deploy from a branch，此 workflow 的 deploy 步骤会立刻失败。
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -41,7 +40,6 @@ jobs:
             ./ _site/
           touch _site/.nojekyll
           test -f _site/detail-ai.html
-          test -f _site/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
