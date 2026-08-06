@@ -19,3 +19,11 @@ npm run dev
 ```bash
 npm run build
 ```
+
+## GitHub Pages 部署
+
+推送 `main` 分支后会自动部署，访问地址：
+
+https://liweimian.github.io/AIQuestion0806/
+
+首次部署请在仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
