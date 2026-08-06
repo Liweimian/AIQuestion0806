@@ -4696,7 +4696,7 @@ body {
 .resource-lane > header button { display: inline-flex; align-items: center; gap: 3px; padding: 5px; color: var(--green-800); font-size: 11px; font-weight: 650; border: 0; background: transparent; }
 .sync-section-label { margin: 12px 0 0; color: #65756d; font-size: 11px; font-weight: 700; }
 
-.book-resource { width: 100%; min-height: 204px; display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 14px; margin-top: 0; padding: 0; color: inherit; text-align: left; border: 0; background: transparent; }
+.book-resource { width: 100%; min-height: 0; display: block; margin-top: 0; padding: 0; color: inherit; text-align: left; border: 0; background: transparent; }
 .sync-resource-mark { min-height: 204px; display: flex; flex-direction: column; padding: 14px 13px 12px; color: #294d3d; border: 1px solid #cfe0d6; border-radius: 7px; background: #edf5f0; }
 .sync-mark-top { display: flex; align-items: center; justify-content: space-between; color: var(--green-800); }
 .sync-mark-top > i { width: 29px; height: 29px; display: grid; place-items: center; font-size: 15px; border-radius: 6px; background: rgba(255,255,255,.72); }

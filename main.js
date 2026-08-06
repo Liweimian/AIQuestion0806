@@ -153,13 +153,6 @@ function homepageSeriesSection() {
       <div class="resource-showcase-grid">
         <article class="resource-lane sync-lane">
           <div class="book-resource">
-            <div class="sync-resource-mark">
-              <span class="sync-mark-top"><i class="ri-layout-4-line"></i><em>01</em></span>
-              <b>七年级上册</b>
-              <strong>同步练习资源</strong>
-              <small>当前章节 · 有理数</small>
-              <span class="sync-progress"><i></i></span>
-            </div>
             <div class="book-detail">
               <div class="book-series-tabs" role="tablist" aria-label="同步练习系列">
                 <button class="active" type="button" role="tab" aria-selected="true" data-book-tab="duowei">多维导学案</button>
