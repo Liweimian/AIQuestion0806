@@ -2,6 +2,7 @@ const params = new URLSearchParams(location.search);
 const topicId = params.get("topic") || "t15";
 const contextName = params.get("context") || "series";
 const fromAi = params.get("from") === "ai";
+const sourceTabId = params.get("tabId") || "";
 
 const topicTitles = {
   t2: "2026 深圳南山区初一上期末数学真题",
@@ -32,19 +33,97 @@ function formatDateListTitle(date = new Date()) {
   return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}题单`;
 }
 
-function loadEditorPayload() {
+function decodePayloadHash() {
+  const raw = location.hash.replace(/^#/, "");
+  if (!raw.startsWith("p=")) return null;
   try {
-    const saved = sessionStorage.getItem("feixiang-editor-payload");
-    if (!saved) return null;
-    return JSON.parse(saved);
-  } catch {
-    return null;
+    const json = decodeURIComponent(escape(atob(decodeURIComponent(raw.slice(2)))));
+    const parsed = JSON.parse(json);
+    if (parsed?.questions?.length) return parsed;
+  } catch {}
+  return null;
+}
+
+function convertTabToEditorPayload(tab) {
+  const visible = (tab.questions || [])
+    .filter(q => !(tab.removedQuestionIds || []).includes(q.id))
+    .sort((a, b) => (a.num || 0) - (b.num || 0));
+
+  return {
+    tabId: tab.id,
+    title: tab.title,
+    isQuestionList: Boolean(tab.isQuestionList),
+    questions: visible.map((q, index) => {
+      const modified = tab.modifiedQuestions?.[q.id] || {};
+      const stem = modified.stem ?? q.stem ?? "";
+      const type = modified.type ?? q.type ?? "选择题";
+      const difficulty = modified.difficulty ?? q.difficulty ?? "中等";
+      const knowledge = modified.knowledge ?? q.knowledge ?? "";
+      return {
+        id: String(q.id || `q-${index + 1}`),
+        num: index + 1,
+        section: q.section || (tab.isQuestionList ? "题单题目" : "试卷题目"),
+        text: stem,
+        options: [...(modified.options ?? q.options ?? [])],
+        answer: modified.answer ?? q.answer ?? "",
+        path: `初中 / 数学 / ${type} / ${difficulty} / ${q.minutes || 2} 分钟`,
+        tags: [tab.meta?.source || "飞象题库", knowledge].filter(Boolean),
+        competency: q.competency || "运算能力",
+        explanation: modified.analysis ?? q.analysis ?? ""
+      };
+    })
+  };
+}
+
+function loadQuestionsFromWorkspace(tabId) {
+  if (!tabId) return null;
+  const workspaceKeys = [
+    "feixiang-ai-workspace-v4-paper",
+    "feixiang-ai-workspace-v4-series"
+  ];
+  for (const storage of [sessionStorage, localStorage]) {
+    for (const key of workspaceKeys) {
+      try {
+        const raw = storage.getItem(key);
+        if (!raw) continue;
+        const workspace = JSON.parse(raw);
+        const tab = workspace.tabs?.find(item => item.id === tabId);
+        if (!tab) continue;
+        const payload = convertTabToEditorPayload(tab);
+        if (payload.questions.length) return payload;
+      } catch {}
+    }
   }
+  return null;
+}
+
+function loadEditorPayload() {
+  const fromHash = decodePayloadHash();
+  if (fromHash) return fromHash;
+
+  const keys = [
+    sourceTabId ? `feixiang-editor-payload-${sourceTabId}` : "",
+    "feixiang-editor-payload"
+  ].filter(Boolean);
+
+  for (const storage of [sessionStorage, localStorage]) {
+    for (const key of keys) {
+      try {
+        const saved = storage.getItem(key);
+        if (!saved) continue;
+        const parsed = JSON.parse(saved);
+        if (parsed?.questions?.length) return parsed;
+      } catch {}
+    }
+  }
+
+  return loadQuestionsFromWorkspace(sourceTabId);
 }
 
 const payload = loadEditorPayload();
 const documentTitle = payload?.title || topicTitles[topicId] || formatDateListTitle();
-let activeQuestions = (payload?.questions?.length ? payload.questions : defaultQuestions).map(question => ({ ...question }));
+const usePayloadQuestions = Boolean(payload?.questions?.length);
+let activeQuestions = (usePayloadQuestions ? payload.questions : defaultQuestions).map(question => ({ ...question }));
 let deletedQuestions = [];
 let selectedId = activeQuestions[0]?.id;
 let modalMode = "add";
@@ -218,7 +297,7 @@ function initPageChrome() {
 
   const backLink = $("#backLink");
   if (fromAi) {
-    backLink.href = `./detail-ai.html?topic=${topicId}&context=${contextName}`;
+    backLink.href = `./detail-ai.html?topic=${encodeURIComponent(topicId)}&context=${encodeURIComponent(contextName)}${sourceTabId ? `&tabId=${encodeURIComponent(sourceTabId)}` : ""}`;
     backLink.innerHTML = '<i class="ri-folder-3-line"></i>返回试卷详情';
   } else {
     backLink.href = `./detail.html?topic=${topicId}&context=${contextName}`;
@@ -227,6 +306,9 @@ function initPageChrome() {
 }
 
 initPageChrome();
+if (fromAi && !usePayloadQuestions) {
+  showToast("未读取到题单题目，请返回重新进入排版");
+}
 renderAll();
 
 $("#orderList").addEventListener("click", event => {

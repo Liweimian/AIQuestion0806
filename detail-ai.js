@@ -170,6 +170,11 @@ function loadWorkspace() {
   try {
     let saved = sessionStorage.getItem(STORAGE_KEY);
     if (!saved) {
+      try {
+        saved = localStorage.getItem(STORAGE_KEY);
+      } catch {}
+    }
+    if (!saved) {
       for (const legacyKey of LEGACY_STORAGE_KEYS) {
         saved = sessionStorage.getItem(legacyKey);
         if (saved) {
@@ -203,7 +208,11 @@ function loadWorkspace() {
 }
 
 function saveWorkspace() {
-  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(workspace));
+  const json = JSON.stringify(workspace);
+  sessionStorage.setItem(STORAGE_KEY, json);
+  try {
+    localStorage.setItem(STORAGE_KEY, json);
+  } catch {}
 }
 
 function getActiveTab() {
@@ -326,6 +335,9 @@ function ensureInitialTab() {
 
   if (params.get("topic")) {
     workspace.activeTabId = mainTab.id;
+  } else if (params.get("tabId")) {
+    const urlTab = workspace.tabs.find(tab => tab.id === params.get("tabId"));
+    if (urlTab) workspace.activeTabId = urlTab.id;
   } else if (!workspace.activeTabId || !workspace.tabs.some(tab => tab.id === workspace.activeTabId)) {
     workspace.activeTabId = mainTab.id;
   }
@@ -346,6 +358,72 @@ function escapeHtml(text) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function resolveTabQuestion(tab, q) {
+  const modified = tab.modifiedQuestions?.[q.id] || {};
+  return {
+    ...q,
+    stem: modified.stem ?? q.stem,
+    type: modified.type ?? q.type,
+    difficulty: modified.difficulty ?? q.difficulty,
+    options: modified.options ?? q.options ?? [],
+    analysis: modified.analysis ?? q.analysis
+  };
+}
+
+function buildEditorPayload(tab) {
+  const visible = tab.questions
+    .filter(q => !tab.removedQuestionIds.includes(q.id))
+    .sort((a, b) => (a.num || 0) - (b.num || 0));
+
+  return {
+    tabId: tab.id,
+    title: tab.title,
+    isQuestionList: Boolean(tab.isQuestionList),
+    context: tab.context || contextName,
+    topicId: getBaseTopicId(tab.topicId),
+    updatedAt: Date.now(),
+    questions: visible.map((q, index) => {
+      const resolved = resolveTabQuestion(tab, q);
+      const meta = questionDefaults(resolved);
+      return {
+        id: String(resolved.id || `q-${index + 1}`),
+        num: index + 1,
+        section: resolved.section || (tab.isQuestionList ? "题单题目" : "试卷题目"),
+        text: resolved.stem || "",
+        options: [...(resolved.options || [])],
+        answer: resolved.answer || "",
+        path: `初中 / 数学 / ${resolved.type || "选择题"} / ${resolved.difficulty || "中等"} / ${meta.minutes} 分钟`,
+        tags: [
+          tab.meta?.source || "飞象题库",
+          resolved.knowledge
+        ].filter(Boolean),
+        competency: resolved.competency || meta.competency || "运算能力",
+        explanation: resolved.analysis || ""
+      };
+    })
+  };
+}
+
+function encodePayloadHash(payload) {
+  const json = JSON.stringify(payload);
+  return `p=${encodeURIComponent(btoa(unescape(encodeURIComponent(json))))}`;
+}
+
+function saveEditorPayload(payload) {
+  const json = JSON.stringify(payload);
+  sessionStorage.setItem("feixiang-editor-payload", json);
+  if (payload.tabId) {
+    sessionStorage.setItem(`feixiang-editor-payload-${payload.tabId}`, json);
+  }
+  try {
+    localStorage.setItem("feixiang-editor-payload", json);
+    if (payload.tabId) {
+      localStorage.setItem(`feixiang-editor-payload-${payload.tabId}`, json);
+    }
+  } catch {}
+  return encodePayloadHash(payload);
 }
 
 function showToast(message) {
@@ -1273,31 +1351,17 @@ function bindEvents() {
       const action = button.dataset.action;
       const tab = getActiveTab();
       if (action === "edit") {
-        const ctx = tab.context || contextName;
-        const topic = getBaseTopicId(tab.topicId);
-        const payload = {
-          title: tab.title,
-          isQuestionList: Boolean(tab.isQuestionList),
-          context: ctx,
-          topicId: topic,
-          questions: tab.questions
-            .filter(q => !tab.removedQuestionIds.includes(q.id))
-            .map(q => ({
-              id: q.id,
-              section: q.section || "题单题目",
-              text: q.stem,
-              options: q.options || [],
-              answer: q.answer,
-              path: `初中 / 数学 / ${q.type || "选择题"} / ${q.difficulty || "中等"} / ${q.minutes || 1} 分钟`,
-              tags: [q.knowledge].filter(Boolean),
-              competency: q.competency || "运算能力",
-              explanation: q.analysis || ""
-            }))
-        };
-        try {
-          sessionStorage.setItem("feixiang-editor-payload", JSON.stringify(payload));
-        } catch {}
-        location.href = `./editor.html?topic=${topic}&context=${ctx}&from=ai`;
+        const tab = getActiveTab();
+        if (!tab) return;
+        const payload = buildEditorPayload(tab);
+        if (!payload.questions.length) {
+          showToast("当前题单没有可排版的题目");
+          return;
+        }
+        const payloadHash = saveEditorPayload(payload);
+        const ctx = payload.context;
+        const topic = payload.topicId;
+        location.href = `./editor.html?topic=${encodeURIComponent(topic)}&context=${encodeURIComponent(ctx)}&from=ai&tabId=${encodeURIComponent(tab.id)}#${payloadHash}`;
       }
       if (action === "download") showToast("正在生成可打印文件…");
     });
