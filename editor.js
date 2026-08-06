@@ -1,26 +1,21 @@
 const params = new URLSearchParams(location.search);
 const topicId = params.get("topic") || "t15";
 const contextName = params.get("context") || "series";
+const fromAi = params.get("from") === "ai";
 
 const topicTitles = {
+  t2: "2026 深圳南山区初一上期末数学真题",
   t8: "正数与负数概念巩固题单",
   t9: "有理数运算基础过关配套题单",
+  t14: "2026 深圳福田区初一下期中数学真题",
   t15: "坂田片区课堂小测精选题单",
   t25: "2025 深圳中考数学基础题单",
   t31: "代数式实际意义专项题单"
 };
 
-const questions = [
-  { id:"q1", section:"基础提优题", text:"如果向东走 3 米记作 +3 米，那么向西走 5 米应记作（　　）。", options:["A. +5 米","B. −5 米","C. +3 米","D. −3 米"], answer:"B", path:"初中 / 数学 / 正负数 / 较易", tags:["正负数意义","基础题"], explanation:"规定向东为正，向西就用负数表示，所以应记作 −5 米。" },
-  { id:"q2", section:"基础提优题", text:"若 |−m| = |− 1/2|，则 m 的值为（　　）。", options:["A. ±2","B. −1/2 或 1/2","C. 1/2","D. −1/2"], answer:"B", path:"初中 / 数学 / 绝对值 / 较易", tags:["绝对值","基础题"], explanation:"由绝对值的定义可知，|m| = 1/2，因此 m = ±1/2。" },
-  { id:"q3", section:"基础提优题", text:"下列各组数中，互为相反数是（　　）。", options:["A. |a| 与 −a","B. |a| 与 a","C. |−1/2| 与 −1/2","D. |1/2| 与 1/2"], answer:"C", path:"初中 / 数学 / 相反数 / 较易", tags:["相反数","易错题"], explanation:"互为相反数的两个数符号相反、绝对值相等，选项 C 符合。" },
-  { id:"q4", section:"基础提优题", text:"如图，四个有理数 m、n、p、q 在数轴上对应的点分别为 M、N、P、Q，若 n + q = 0，则绝对值最小的一个数所对应的点是______。", options:[], answer:"N", path:"初中 / 数学 / 数轴 / 中等", tags:["数轴","综合判断"], explanation:"结合数轴上各点的位置和 n、q 互为相反数的条件判断即可。" },
-  { id:"q5", section:"基础提优题", text:"已知 a 为整数。（1）|a| 能取最大值还是最小值？值是多少？（2）|a| + 2 能取最大值还是最小值？", options:[], answer:"最小值", path:"初中 / 数学 / 绝对值 / 中等", tags:["绝对值","综合应用"], explanation:"整数集合没有最大值，但 |a| 的最小值为 0。" },
-  { id:"q6", section:"基础提优题", text:"使等式 |−8 + a| = |−8| + |a| 成立的 a 为（　　）。", options:["A. 任意正数","B. 任意负数","C. a≤0","D. a≥0"], answer:"C", path:"初中 / 数学 / 有理数运算 / 中等", tags:["绝对值","运算"], explanation:"根据绝对值三角不等式取等条件可知，−8 与 a 同号或其中一个为 0。" },
-  { id:"q7", section:"基础提优题", text:"数轴上点 A 表示 −3，点 B 表示 2，则 A、B 两点之间的距离是（　　）。", options:["A. 1","B. 5","C. −1","D. −5"], answer:"B", path:"初中 / 数学 / 数轴 / 较易", tags:["数轴","距离"], explanation:"两点间距离等于它们所表示的数之差的绝对值：|2−(−3)|=5。" },
-  { id:"q8", section:"基础提优题", text:"下列说法正确的是（　　）。", options:["A. 0 是正数","B. 0 是负数","C. 0 既不是正数也不是负数","D. 0 是最小的正数"], answer:"C", path:"初中 / 数学 / 正负数 / 较易", tags:["概念判断","基础题"], explanation:"0 既不是正数，也不是负数。" },
-  { id:"q9", section:"综合应用题", text:"某食品包装袋上标有“净含量 500±5 g”。抽检 5 袋食品的质量分别为 497 g、503 g、506 g、500 g、495 g。请用正负数表示它们相对于标准质量的偏差。", options:[], answer:"−3、+3、+6、0、−5", path:"初中 / 数学 / 正负数 / 中等", tags:["情境应用","综合题"], explanation:"以 500 g 为标准，实际质量减去标准质量即可得到偏差。" },
-  { id:"q10", section:"综合应用题", text:"周末小明从学校出发，沿东西方向的道路行走。规定向东为正，记录依次为 +2 km、−1.5 km、+0.5 km、−3 km。请判断他最后的位置。", options:[], answer:"学校西侧 2 km", path:"初中 / 数学 / 有理数运算 / 中等", tags:["情境应用","综合题"], explanation:"将各次位移相加：2−1.5+0.5−3=−2，因此在学校西侧 2 km。" }
+const defaultQuestions = [
+  { id:"q1", section:"基础提优题", text:"如果向东走 3 米记作 +3 米，那么向西走 5 米应记作（　　）。", options:["A. +5 米","B. −5 米","C. +3 米","D. −3 米"], answer:"B", path:"初中 / 数学 / 单项选择题 / 较易 / 1 分钟", tags:["26-27·七年级上全品作业本","正负数意义"], competency:"运算能力", explanation:"规定向东为正，向西就用负数表示，所以应记作 −5 米。" },
+  { id:"q2", section:"基础提优题", text:"若 |−m| = |− 1/2|，则 m 的值为（　　）。", options:["A. ±2","B. −1/2 或 1/2","C. 1/2","D. −1/2"], answer:"B", path:"初中 / 数学 / 单项选择题 / 较易 / 1 分钟", tags:["26-27·七年级上全品作业本","绝对值"], competency:"抽象能力", explanation:"由绝对值的定义可知，|m| = 1/2，因此 m = ±1/2。" }
 ];
 
 const bankQuestions = [
@@ -32,9 +27,26 @@ const bankQuestions = [
   { id:"b6", text:"某地一周最低气温为 −4℃，最高气温为 9℃，温差是多少？", meta:"情境应用 · 较易 · 解答题", answer:"13℃" }
 ];
 
-let activeQuestions = questions.map(question => ({ ...question }));
+function formatDateListTitle(date = new Date()) {
+  const pad = value => String(value).padStart(2, "0");
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}题单`;
+}
+
+function loadEditorPayload() {
+  try {
+    const saved = sessionStorage.getItem("feixiang-editor-payload");
+    if (!saved) return null;
+    return JSON.parse(saved);
+  } catch {
+    return null;
+  }
+}
+
+const payload = loadEditorPayload();
+const documentTitle = payload?.title || topicTitles[topicId] || formatDateListTitle();
+let activeQuestions = (payload?.questions?.length ? payload.questions : defaultQuestions).map(question => ({ ...question }));
 let deletedQuestions = [];
-let selectedId = activeQuestions[1].id;
+let selectedId = activeQuestions[0]?.id;
 let modalMode = "add";
 
 const $ = selector => document.querySelector(selector);
@@ -44,12 +56,11 @@ function renderOrder() {
   const sections = [...new Set(activeQuestions.map(question => question.section))];
   $("#orderList").innerHTML = sections.map(section => {
     const items = activeQuestions.filter(question => question.section === section);
-    return `<section class="order-section"><h3>${section}</h3><div class="order-items">${items.map(question => {
+    return `<section class="order-section"><h3>${esc(section)}</h3><div class="order-items">${items.map(question => {
       const number = activeQuestions.findIndex(item => item.id === question.id) + 1;
       return `<button class="order-item ${question.id === selectedId ? "active" : ""}" data-select-question="${question.id}" type="button">${number}</button>`;
     }).join("")}</div></section>`;
   }).join("");
-  $("#questionTotal").textContent = `${activeQuestions.length} 题`;
 }
 
 function renderQuestionList() {
@@ -63,7 +74,7 @@ function renderQuestionList() {
         <button data-question-action="delete" type="button" aria-label="删除"><i class="ri-delete-bin-line"></i></button>
       </div>` : ""}
       <p class="question-text">${esc(question.text)}</p>
-      ${question.options.length ? `<div class="question-options">${question.options.map(option => `<span>${esc(option)}</span>`).join("")}</div>` : ""}
+      ${question.options?.length ? `<div class="question-options">${question.options.map(option => `<span>${esc(option)}</span>`).join("")}</div>` : ""}
     </article>`).join("");
 }
 
@@ -73,13 +84,21 @@ function renderInfo() {
     $("#infoContent").innerHTML = "<p class=\"info-path\">题单中还没有题目</p>";
     return;
   }
+  const mainTag = question.tags?.[0] || "26-27·七年级上全品作业本";
+  const knowledgeTags = (question.tags || []).slice(1);
   $("#infoContent").innerHTML = `
+    <span class="info-tag-main">${esc(mainTag)}</span>
     <div class="info-path">${esc(question.path)}</div>
     <p class="info-label">知识点</p>
-    <div class="info-tags">${question.tags.map(tag => `<span>${esc(tag)}</span>`).join("")}</div>
+    <div class="info-tags">${(knowledgeTags.length ? knowledgeTags : ["待补充"]).map(tag => `<span>${esc(tag)}</span>`).join("")}</div>
+    <p class="info-label">核心素养</p>
+    <div class="info-tags"><span>${esc(question.competency || "运算能力")}</span></div>
     <p class="info-label">答案</p>
     <div class="info-answer">${esc(question.answer)}</div>
-    <p class="info-label">解析</p>
+    <div class="info-explanation-head">
+      <p class="info-label">解析</p>
+      <span class="info-ai-badge">AI生成</span>
+    </div>
     <div class="info-explanation">${esc(question.explanation)}</div>`;
 }
 
@@ -127,7 +146,7 @@ function selectQuestion(id, shouldScroll = false) {
   if (!activeQuestions.some(question => question.id === id)) return;
   selectedId = id;
   renderAll();
-  if (shouldScroll) $("[data-question-id=\"${id}\"]")?.scrollIntoView({ behavior:"smooth", block:"center" });
+  if (shouldScroll) document.querySelector(`[data-question-id="${id}"]`)?.scrollIntoView({ behavior:"smooth", block:"center" });
 }
 
 function moveQuestion(direction) {
@@ -162,7 +181,7 @@ function addBankQuestion(id) {
     options: [],
     answer: source.answer,
     path: `初中 / 数学 / ${source.meta.split(" · ")[0]}`,
-    tags: [source.meta.split(" · ")[0], "题库精选"],
+    tags: ["25-26·七年级上5年中考3年模拟", source.meta.split(" · ")[0], "题库精选"],
     explanation: `这道题来自题库精选，答案为${source.answer}，可继续调整后使用。`
   };
   const insertIndex = activeQuestions.findIndex(item => item.id === selectedId);
@@ -184,7 +203,7 @@ function replaceQuestion(id) {
     options: [],
     answer: source.answer,
     path: `初中 / 数学 / ${source.meta.split(" · ")[0]}`,
-    tags: [source.meta.split(" · ")[0], "题库精选"],
+    tags: ["25-26·七年级上5年中考3年模拟", source.meta.split(" · ")[0], "题库精选"],
     explanation: `已用题库中的相近题目替换，答案为${source.answer}。`
   };
   closeModal();
@@ -192,9 +211,22 @@ function replaceQuestion(id) {
   showToast("题目已替换");
 }
 
-$("#editorTitle").textContent = topicTitles[topicId] || topicTitles.t15;
-$("#workbenchTitle").textContent = topicTitles[topicId] || topicTitles.t15;
-$(".editor-breadcrumb").href = `./detail.html?topic=${topicId}&context=${contextName}`;
+function initPageChrome() {
+  $("#paperTitle").textContent = documentTitle;
+  document.title = `${documentTitle} · 飞象 AI 题库`;
+  $("#breadcrumbLeaf").textContent = payload?.isQuestionList ? "新建题单" : "排版题单";
+
+  const backLink = $("#backLink");
+  if (fromAi) {
+    backLink.href = `./detail-ai.html?topic=${topicId}&context=${contextName}`;
+    backLink.innerHTML = '<i class="ri-folder-3-line"></i>返回试卷详情';
+  } else {
+    backLink.href = `./detail.html?topic=${topicId}&context=${contextName}`;
+    backLink.innerHTML = '<i class="ri-folder-3-line"></i>返回题单详情';
+  }
+}
+
+initPageChrome();
 renderAll();
 
 $("#orderList").addEventListener("click", event => {
@@ -216,8 +248,11 @@ $("#questionList").addEventListener("click", event => {
 
 document.querySelectorAll('[data-editor-action="add"]').forEach(button => button.addEventListener("click", () => openModal("add")));
 document.querySelector('[data-editor-action="deleted"]').addEventListener("click", () => openModal("deleted"));
-document.querySelector('[data-editor-action="save-as"]').addEventListener("click", () => showToast("已另存为新的题单"));
-document.querySelector('[data-editor-action="download"]').addEventListener("click", () => showToast("正在生成可打印文件"));
+document.querySelector('[data-editor-action="preview"]').addEventListener("click", () => showToast("正在打开预览…"));
+document.querySelector('[data-editor-action="save"]').addEventListener("click", () => showToast("题单已保存"));
+document.querySelector('[data-editor-action="assign"]').addEventListener("click", () => showToast("正在进入布置流程…"));
+document.querySelector('[data-editor-action="print"]').addEventListener("click", () => showToast("正在准备打印…"));
+document.querySelector('[data-editor-action="download"]').addEventListener("click", () => showToast("正在生成可打印文件…"));
 
 $("#bankList").addEventListener("click", event => {
   const bankButton = event.target.closest("[data-bank-question]");

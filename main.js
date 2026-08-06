@@ -144,7 +144,7 @@ function topicCard(topic, options = "default") {
 }
 
 function bookLessonRow(index, title, meta, usage) {
-  return `<a class="book-topic-row" href="./detail.html?topic=t9&context=series"><i>${String(index).padStart(2, "0")}</i><span><b>${title}</b><small>${meta}</small></span><strong>${usage.toLocaleString()} 人使用</strong></a>`;
+  return `<a class="book-topic-row" href="./detail-ai.html?topic=t9&context=series"><i>${String(index).padStart(2, "0")}</i><span><b>${title}</b><small>${meta}</small></span><strong>${usage.toLocaleString()} 人使用</strong></a>`;
 }
 
 function homepageSeriesSection() {
@@ -456,7 +456,7 @@ function openTopic(id) {
     source: topic.source,
     usage: String(topic.usage)
   });
-  location.href = `./detail.html?${qs.toString()}`;
+  location.href = `./${context === "paper" || context === "series" ? "detail-ai" : "detail"}.html?${qs.toString()}`;
 }
 
 function showAiDock(visible) {
