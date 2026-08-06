@@ -30,13 +30,30 @@
         </a>
       </section>
 
-      <form id="aiStarter" class="ai-starter" aria-label="AI 生成题单">
-        <span class="ai-starter-badge" aria-hidden="true"><i class="ri-sparkling-2-line"></i><span>AI</span></span>
-        <input id="aiStarterInput" class="ai-starter-input" placeholder="描述你想要的题单，例如：七上有理数易错题，15 题，中等难度" autocomplete="off" />
-        <button id="aiStarterAdd" class="ai-starter-icon" type="button" aria-label="添加材料"><i class="ri-add-line"></i></button>
-        <button id="aiStarterVoice" class="ai-voice-button" type="button" aria-label="语音输入"><i class="ri-mic-line"></i></button>
-        <button id="aiStarterSubmit" class="ai-starter-submit" type="submit" aria-label="生成题单"><i class="ri-arrow-up-line"></i></button>
-      </form>
+      <div class="home-entry-row">
+        <form id="aiStarter" class="ai-starter" aria-label="AI 生成题单">
+          <span class="ai-starter-badge" aria-hidden="true"><i class="ri-sparkling-2-line"></i><span>AI</span></span>
+          <input id="aiStarterInput" class="ai-starter-input" placeholder="描述你想要的题单，例如：七上有理数易错题，15 题，中等难度" autocomplete="off" />
+          <button id="aiStarterAdd" class="ai-starter-icon" type="button" aria-label="添加材料"><i class="ri-add-line"></i></button>
+          <button id="aiStarterVoice" class="ai-voice-button" type="button" aria-label="语音输入"><i class="ri-mic-line"></i></button>
+          <button id="aiStarterSubmit" class="ai-starter-submit" type="submit" aria-label="生成题单"><i class="ri-arrow-up-line"></i></button>
+        </form>
+
+        <aside class="bank-stats-card" aria-label="题库概览">
+          <span class="bank-stats-item">
+            <strong id="statTopicTotal">—</strong>
+            <small>题单总量</small>
+          </span>
+          <span class="bank-stats-item is-new">
+            <strong id="statWeeklyNew">—</strong>
+            <small>7 天新增题单</small>
+          </span>
+          <span class="bank-stats-item">
+            <strong id="statQuestionTotal">—</strong>
+            <small>题目总量</small>
+          </span>
+        </aside>
+      </div>
 
       <div id="emptyState" class="empty-state" hidden>
         <div>

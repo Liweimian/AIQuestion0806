@@ -55,6 +55,7 @@ const topics = [
 const byId = Object.fromEntries(topics.map(topic => [topic.id, topic]));
 const toneMap = { sage:"var(--sage)", cream:"var(--cream)", lilac:"var(--lilac)", mist:"var(--mist)" };
 const aiPlaceholder = "描述你想要的题单，例如：七上有理数易错题，15 题，中等难度";
+const bankStats = { topicTotal: 28460, weeklyNew: 320, questionTotal: 6000000 };
 let currentFilter = "all";
 let currentQuery = "";
 let aiDockObserver = null;
@@ -462,6 +463,21 @@ function openAi(prompt = "") {
 function closeAi() { aiModalOpen = false; aiMask.hidden = true; document.body.style.overflow = ""; const square = document.querySelector("[data-square-section]"); if (square && aiDockObserver) showAiDock(square.getBoundingClientRect().top < window.innerHeight && square.getBoundingClientRect().bottom > 0); }
 function showToast(message) { toast.textContent = message; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 1700); }
 
+function formatStat(value) {
+  if (value < 10000) return value.toLocaleString();
+  const wan = value / 10000;
+  return `${Number(wan.toFixed(wan >= 100 ? 0 : 1))}W`;
+}
+
+function renderBankStats() {
+  const fields = { statTopicTotal: bankStats.topicTotal, statWeeklyNew: bankStats.weeklyNew, statQuestionTotal: bankStats.questionTotal };
+  Object.entries(fields).forEach(([id, value]) => {
+    const node = document.querySelector(`#${id}`);
+    if (node) node.textContent = formatStat(value);
+  });
+}
+
+renderBankStats();
 render();
 
 window.addEventListener("scroll", () => {

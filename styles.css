@@ -1249,6 +1249,14 @@ body, button, input, textarea, select { font-family: var(--font-ui); }
   padding-bottom: 70px;
 }
 
+.home-entry-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(268px, 336px);
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 16px;
+}
+
 .ai-starter {
   min-height: 68px;
   width: 100%;
@@ -1256,12 +1264,60 @@ body, button, input, textarea, select { font-family: var(--font-ui); }
   grid-template-columns: auto minmax(0, 1fr) 40px 40px 44px;
   align-items: center;
   gap: 10px;
-  margin: 16px 0 0;
+  margin: 0;
   padding: 10px 12px;
   border: 1px solid #d5dfd9;
   border-radius: 14px;
   background: #fff;
   box-shadow: 0 8px 24px rgba(31, 65, 50, .045);
+}
+
+.bank-stats-card {
+  min-height: 68px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  padding: 10px 4px;
+  border: 1px solid #d5dfd9;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(31, 65, 50, .045);
+}
+
+.bank-stats-item {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 0 6px;
+  border-left: 1px solid var(--line-soft);
+}
+
+.bank-stats-item:first-child {
+  border-left: 0;
+}
+
+.bank-stats-item strong {
+  color: var(--green-900);
+  font-family: var(--font-ui);
+  font-size: 19px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  letter-spacing: -.3px;
+}
+
+.bank-stats-item.is-new strong::before {
+  content: "+";
+  margin-right: 1px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.bank-stats-item small {
+  color: #7b8781;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .ai-starter:focus-within {
@@ -1413,6 +1469,31 @@ body, button, input, textarea, select { font-family: var(--font-ui); }
 
 body.has-ai-dock .page {
   padding-bottom: 116px;
+}
+
+@media (max-width: 1080px) {
+  .home-entry-row {
+    grid-template-columns: minmax(0, 1fr) minmax(228px, 268px);
+    gap: 10px;
+  }
+
+  .bank-stats-item strong {
+    font-size: 18px;
+  }
+
+  .bank-stats-item small {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 860px) {
+  .home-entry-row {
+    grid-template-columns: 1fr;
+  }
+
+  .bank-stats-card {
+    min-height: 60px;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1740,6 +1821,11 @@ body { color: #24322b; }
   letter-spacing: -.15px;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+.topic-card .card-cover h3:has(+ .topic-brief) {
+  min-height: 0;
+  margin: 10px 0 0;
+  line-height: 1.38;
 }
 .topic-card .card-body {
   display: block;
@@ -4627,8 +4713,18 @@ body {
 .exam-paper-card .card-meta span + span::before {
   content: none;
 }
-.topic-brief { display: -webkit-box; overflow: hidden; min-height: 36px; margin: 8px 0 0; color: #6f7c75; font-size: 12px; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.topic-card .card-cover h3 + .topic-brief { margin-top: 7px; }
+.topic-brief { display: -webkit-box; overflow: hidden; min-height: 0; margin: 4px 0 0; color: #6f7c75; font-size: 12px; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.topic-card .card-cover h3 + .topic-brief { margin-top: 4px; }
+
+.flat-resource-grid .topic-card .card-cover h3:has(+ .topic-brief),
+[data-endless-grid] .topic-card .card-cover h3:has(+ .topic-brief) {
+  margin-top: 8px;
+}
+
+.flat-resource-grid .topic-card .topic-brief,
+[data-endless-grid] .topic-card .topic-brief {
+  margin-top: 3px;
+}
 
 /* First-screen resource type is intentionally larger than the browse feed below. */
 .sync-resource-mark > b { font-size: 13px; }
