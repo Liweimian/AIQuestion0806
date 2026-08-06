@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="飞象 AI 题库 · 编辑题单" />
+    <title>编辑题单 · 飞象 AI 题库</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" />
+    <link rel="stylesheet" href="./editor.css" />
+  </head>
+  <body>
+    <header class="editor-topbar">
+      <a class="editor-breadcrumb" href="./detail.html?topic=t15&context=series">
+        <i class="ri-arrow-left-line"></i><span>题单详情</span><i class="ri-arrow-right-s-line"></i><strong>编辑题单</strong>
+      </a>
+      <div class="editor-title-wrap">
+        <span class="editor-eyebrow">正在编辑</span>
+        <h1 id="editorTitle">坂田片区课堂小测精选题单</h1>
+      </div>
+      <nav class="editor-actions" aria-label="题单操作">
+        <button class="top-action" data-editor-action="deleted" type="button"><i class="ri-delete-bin-line"></i>已删除题目</button>
+        <button class="top-action" data-editor-action="save-as" type="button"><i class="ri-save-3-line"></i>另存为新题单</button>
+        <button class="top-action accent" data-editor-action="add" type="button"><i class="ri-file-add-line"></i>添加题目</button>
+        <button class="top-action" data-editor-action="download" type="button"><i class="ri-download-2-line"></i>下载</button>
+      </nav>
+    </header>
+
+    <main class="editor-shell">
+      <aside class="order-panel" aria-label="题目排序">
+        <div class="panel-heading">
+          <div><h2>题目排序</h2><span>可拖动排序</span></div>
+          <strong id="questionTotal">10 题</strong>
+        </div>
+        <div id="orderList" class="order-list"></div>
+        <button class="add-question-inline" data-editor-action="add" type="button"><i class="ri-add-line"></i>从题库添加题目</button>
+      </aside>
+
+      <section class="question-workbench" aria-label="题单内容">
+        <div class="workbench-head">
+          <div>
+            <p>题单内容</p>
+            <h2 id="workbenchTitle">坂田片区课堂小测精选题单</h2>
+          </div>
+          <span class="save-state"><i class="ri-checkbox-circle-line"></i>已自动保存</span>
+        </div>
+        <div id="questionList" class="question-list-editor"></div>
+      </section>
+
+      <aside class="question-info" aria-label="题目信息">
+        <div class="info-heading"><h2>题目信息</h2><i class="ri-arrow-down-s-line"></i></div>
+        <div id="infoContent" class="info-content"></div>
+      </aside>
+    </main>
+
+    <div id="modalLayer" class="modal-layer" hidden>
+      <div class="modal-backdrop" data-close-modal></div>
+      <section class="question-bank-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <header class="modal-head">
+          <div><p id="modalKicker">题库</p><h2 id="modalTitle">从题库添加题目</h2></div>
+          <button class="icon-button" data-close-modal type="button" aria-label="关闭"><i class="ri-close-line"></i></button>
+        </header>
+        <div class="modal-toolbar"><div class="modal-search"><i class="ri-search-line"></i><input id="bankSearch" placeholder="搜索题目或知识点" /></div><span>精选题目 · 适配七年级数学</span></div>
+        <div id="bankList" class="bank-list"></div>
+      </section>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script type="module" src="./editor.js"></script>
+  </body>
+</html>
