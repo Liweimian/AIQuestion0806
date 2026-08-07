@@ -63,6 +63,39 @@ let aiModalOpen = false;
 let hasUserScrolled = false;
 let filterManuallyExpanded = false;
 const feedFilterState = { type:"all", difficulty:"all", source:"all", feature:"all", sort:"default" };
+const paperFilterState = {
+  examType: "final",
+  year: "all",
+  grade: "all",
+  source: "all",
+  sort: "latest",
+  query: ""
+};
+const paperExamTypes = {
+  final: { label: "期末", match: topic => /期末/.test(topic.title) },
+  midterm: { label: "期中", match: topic => /期中/.test(topic.title) },
+  monthly: { label: "月考", match: topic => /月考/.test(topic.title) },
+  unit: { label: "单元测试", match: topic => /单元|周测/.test(topic.title) },
+  other: { label: "其他", match: topic => topic.tag === "paper" && !/期末|期中|月考|单元|周测|中考|小升初|模拟/.test(topic.title) },
+  "zhongkao-real": { label: "真题", match: topic => /中考|小升初|真题汇编/.test(topic.title) },
+  "zhongkao-mock": { label: "模拟", match: topic => /模拟/.test(topic.title) }
+};
+const paperYearOptions = ["all", "2026", "2025", "2024", "2023", "earlier"];
+const paperGradeOptions = [
+  { id: "all", label: "全部" },
+  { id: "g9-2", label: "九年级下", match: /九年级下|初三下/ },
+  { id: "g9-1", label: "九年级上", match: /九年级上|初三上/ },
+  { id: "g8-2", label: "八年级下", match: /八年级下|初二下/ },
+  { id: "g8-1", label: "八年级上", match: /八年级上|初二上/ },
+  { id: "g7-2", label: "七年级下", match: /七年级下|初一下/ },
+  { id: "g7-1", label: "七年级上", match: /七年级上|初一上/ }
+];
+const paperSourceOptions = [
+  { id: "all", label: "全部" },
+  { id: "public", label: "飞象公共库", match: topic => !topic.author && !/私有/.test(topic.source) },
+  { id: "district", label: "龙岗区私有库", match: topic => /龙岗/.test(`${topic.source} ${topic.author?.school || ""}`) },
+  { id: "school", label: "本校私有库", match: topic => Boolean(topic.author) }
+];
 
 const contentFeed = document.querySelector("#contentFeed");
 const emptyState = document.querySelector("#emptyState");
@@ -279,12 +312,186 @@ function homepageFeed() {
   return `${homepageSeriesSection()}${infiniteFeedMarkup()}`;
 }
 
+function paperTopics() {
+  return topics.filter(topic => topic.tag === "paper");
+}
+
+function paperMatchesYear(topic, year) {
+  if (year === "all") return true;
+  if (year === "earlier") return !/(202[3-6]|2030)/.test(topic.title);
+  return topic.title.includes(year);
+}
+
+function paperMatchesGrade(topic, grade) {
+  if (grade === "all") return true;
+  const option = paperGradeOptions.find(item => item.id === grade);
+  return option?.match?.test(topic.title) ?? true;
+}
+
+function paperMatchesSource(topic, source) {
+  if (source === "all") return true;
+  const option = paperSourceOptions.find(item => item.id === source);
+  return option?.match?.(topic) ?? true;
+}
+
+function paperMatchesExamType(topic, examType) {
+  const matcher = paperExamTypes[examType]?.match;
+  return matcher ? matcher(topic) : true;
+}
+
+function filteredPaperTopics() {
+  const keyword = paperFilterState.query.trim().toLowerCase();
+  let list = paperTopics().filter(topic =>
+    paperMatchesExamType(topic, paperFilterState.examType)
+    && paperMatchesYear(topic, paperFilterState.year)
+    && paperMatchesGrade(topic, paperFilterState.grade)
+    && paperMatchesSource(topic, paperFilterState.source)
+    && (!keyword || `${topic.title} ${topic.source} ${topic.focus}`.toLowerCase().includes(keyword))
+  );
+  if (paperFilterState.sort === "recommend") {
+    list = [...list].sort((a, b) => b.usage - a.usage);
+  } else {
+    list = [...list].sort((a, b) => {
+      const latestDelta = (b.highlight === "最新" ? 1 : 0) - (a.highlight === "最新" ? 1 : 0);
+      return latestDelta || b.id.localeCompare(a.id);
+    });
+  }
+  return list;
+}
+
+function paperFilterTagGroup(name, options, activeValue, dataAttr) {
+  return `
+    <div class="paper-filter-row">
+      <span class="paper-filter-label">${name}</span>
+      <div class="paper-filter-tags">
+        ${options.map(option => {
+          const value = typeof option === "string" ? option : option.id;
+          const label = typeof option === "string"
+            ? (value === "all" ? "全部" : value === "earlier" ? "更早之前" : value)
+            : option.label;
+          return `<button type="button" class="${activeValue === value ? "active" : ""}" ${dataAttr}="${value}">${label}</button>`;
+        }).join("")}
+      </div>
+    </div>`;
+}
+
+function paperCategoryView() {
+  const list = filteredPaperTopics();
+  const isZhongkao = ["zhongkao-real", "zhongkao-mock"].includes(paperFilterState.examType);
+  return `
+    <section class="category-detail paper-category-view">
+      <div class="resource-browser paper-browser">
+        <nav class="paper-sidebar" aria-label="试卷分类">
+          <div class="paper-sidebar-group ${isZhongkao ? "" : "open"}">
+            <button class="paper-sidebar-group-toggle" type="button" aria-expanded="${!isZhongkao}">
+              <i class="ri-${isZhongkao ? "arrow-right" : "arrow-down-s"}-line"></i><span>同步试卷</span>
+            </button>
+            <div class="paper-sidebar-items" ${isZhongkao ? "hidden" : ""}>
+              ${["final", "midterm", "monthly", "unit", "other"].map(type => `
+                <button type="button" class="${paperFilterState.examType === type ? "active" : ""}" data-paper-type="${type}">${paperExamTypes[type].label}</button>
+              `).join("")}
+            </div>
+          </div>
+          <div class="paper-sidebar-group ${isZhongkao ? "open" : ""}">
+            <button class="paper-sidebar-group-toggle" type="button" aria-expanded="${isZhongkao}">
+              <i class="ri-${isZhongkao ? "arrow-down-s" : "arrow-right"}-line"></i><span>小升初</span>
+            </button>
+            <div class="paper-sidebar-items" ${isZhongkao ? "" : "hidden"}>
+              ${["zhongkao-real", "zhongkao-mock"].map(type => `
+                <button type="button" class="${paperFilterState.examType === type ? "active" : ""}" data-paper-type="${type}">${paperExamTypes[type].label}</button>
+              `).join("")}
+            </div>
+          </div>
+        </nav>
+        <div class="paper-browser-main">
+          <div class="paper-filter-panel">
+            ${paperFilterTagGroup("学年", paperYearOptions, paperFilterState.year, "data-paper-year")}
+            <div class="paper-filter-row">
+              <span class="paper-filter-label">地区</span>
+              <button class="paper-filter-select" type="button"><span>深圳市龙岗区</span><i class="ri-arrow-down-s-line"></i></button>
+            </div>
+            ${paperFilterTagGroup("年级", paperGradeOptions, paperFilterState.grade, "data-paper-grade")}
+            ${paperFilterTagGroup("来源", paperSourceOptions, paperFilterState.source, "data-paper-source")}
+            <label class="paper-filter-search">
+              <span class="paper-filter-label">搜索</span>
+              <div class="paper-search-field">
+                <i class="ri-search-line"></i>
+                <input data-paper-search type="search" value="${paperFilterState.query.replace(/"/g, "&quot;")}" placeholder="请输入试卷名称或其他关键词进行搜索" />
+              </div>
+            </label>
+          </div>
+          <div class="paper-list-toolbar">
+            <div class="paper-list-tabs" role="tablist" aria-label="试卷排序">
+              <button type="button" class="${paperFilterState.sort === "latest" ? "active" : ""}" data-paper-sort="latest" role="tab">最新</button>
+              <button type="button" class="${paperFilterState.sort === "recommend" ? "active" : ""}" data-paper-sort="recommend" role="tab">推荐</button>
+            </div>
+            <span class="paper-list-count" data-paper-result-count>试卷 共 ${list.length.toLocaleString()} 份</span>
+          </div>
+          <div class="resource-card-grid paper-result-grid">${list.map(topic => topicCard(topic, { context: "paper" })).join("")}</div>
+          <div class="paper-empty" ${list.length ? "hidden" : ""}>没有找到匹配的试卷，试试调整筛选条件。</div>
+        </div>
+      </div>
+    </section>`;
+}
+
+function applyPaperFilters(options = {}) {
+  if (options.examType) paperFilterState.examType = options.examType;
+  if (options.year) paperFilterState.year = options.year;
+  if (options.grade) paperFilterState.grade = options.grade;
+  if (options.source) paperFilterState.source = options.source;
+  if (options.sort) paperFilterState.sort = options.sort;
+  if (typeof options.query === "string") paperFilterState.query = options.query;
+
+  const panel = document.querySelector(".paper-category-view");
+  if (!panel) return;
+
+  const list = filteredPaperTopics();
+  panel.querySelectorAll("[data-paper-type]").forEach(button => {
+    button.classList.toggle("active", button.dataset.paperType === paperFilterState.examType);
+  });
+  panel.querySelectorAll("[data-paper-year]").forEach(button => {
+    button.classList.toggle("active", button.dataset.paperYear === paperFilterState.year);
+  });
+  panel.querySelectorAll("[data-paper-grade]").forEach(button => {
+    button.classList.toggle("active", button.dataset.paperGrade === paperFilterState.grade);
+  });
+  panel.querySelectorAll("[data-paper-source]").forEach(button => {
+    button.classList.toggle("active", button.dataset.paperSource === paperFilterState.source);
+  });
+  panel.querySelectorAll("[data-paper-sort]").forEach(button => {
+    button.classList.toggle("active", button.dataset.paperSort === paperFilterState.sort);
+  });
+
+  const grid = panel.querySelector(".paper-result-grid");
+  if (grid) {
+    grid.innerHTML = list.map(topic => topicCard(topic, { context: "paper" })).join("");
+    bindContentEvents(grid);
+  }
+  const count = panel.querySelector("[data-paper-result-count]");
+  if (count) count.textContent = `试卷 共 ${list.length.toLocaleString()} 份`;
+  const empty = panel.querySelector(".paper-empty");
+  if (empty) empty.hidden = list.length > 0;
+
+  const isZhongkao = ["zhongkao-real", "zhongkao-mock"].includes(paperFilterState.examType);
+  panel.querySelectorAll(".paper-sidebar-group").forEach((group, index) => {
+    const open = index === 0 ? !isZhongkao : isZhongkao;
+    group.classList.toggle("open", open);
+    const toggle = group.querySelector(".paper-sidebar-group-toggle");
+    const items = group.querySelector(".paper-sidebar-items");
+    const icon = toggle?.querySelector("i");
+    if (toggle) toggle.setAttribute("aria-expanded", String(open));
+    if (items) items.hidden = !open;
+    if (icon) icon.className = open ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line";
+  });
+}
+
 function categoryBrowserView(kind) {
   const config = {
     chapter: { label:"同步练习", navLabel:"教材章节", nav:["正数与负数","有理数及其运算","整式的加减","一元一次方程","图形初步认识"], topics:["t8","t9","t10","t11","t12","t13"], chips:["全部同步", "课时练习", "单元检测", "易错巩固"], selector:"人教版七上" },
     special: { label:"专项练习", navLabel:"知识领域", nav:["数与式","方程与不等式","函数","图形与几何","统计与概率"], topics:["t1","t3","t5","t23","t28","t31","t32"], chips:["全部专项", "易错巩固", "方法突破", "情境应用", "培优提高"], selector:"全部难度" },
     paper: { label:"试卷", navLabel:"考试类型", nav:["期末考试","期中考试","月考","单元测试","中考真题"], topics:["t2","t4","t6","t14","t25","t27","t33"], chips:["本地优先", "使用最多", "真题汇编"], selector:"深圳市 · 七年级数学" }
   }[kind];
+  if (kind === "paper") return paperCategoryView();
   const list = config.topics.map(id => byId[id]).filter(Boolean);
   return `
     <section class="category-detail unified-category-view">
@@ -417,6 +624,23 @@ function bindContentEvents(root = document) {
   root.querySelectorAll(".resource-selector-group button").forEach(button => button.addEventListener("click", () => showToast(`正在调整${button.textContent.trim()}`)));
   root.querySelectorAll("[data-series-search]").forEach(input => input.addEventListener("input", () => filterSeriesTopics(input.value)));
   root.querySelectorAll("[data-series-query]").forEach(button => button.addEventListener("click", () => { const input = button.closest(".series-category-view").querySelector("[data-series-search]"); input.value = button.dataset.seriesQuery; filterSeriesTopics(input.value); button.closest(".series-quick-links").querySelectorAll("button").forEach(item => item.classList.toggle("active", item === button)); }));
+  root.querySelectorAll(".paper-sidebar-group-toggle").forEach(button => button.addEventListener("click", () => {
+    const group = button.closest(".paper-sidebar-group");
+    const open = !group.classList.contains("open");
+    group.classList.toggle("open", open);
+    button.setAttribute("aria-expanded", String(open));
+    const items = group.querySelector(".paper-sidebar-items");
+    if (items) items.hidden = !open;
+    const icon = button.querySelector("i");
+    if (icon) icon.className = open ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line";
+  }));
+  root.querySelectorAll("[data-paper-type]").forEach(button => button.addEventListener("click", () => applyPaperFilters({ examType: button.dataset.paperType })));
+  root.querySelectorAll("[data-paper-year]").forEach(button => button.addEventListener("click", () => applyPaperFilters({ year: button.dataset.paperYear })));
+  root.querySelectorAll("[data-paper-grade]").forEach(button => button.addEventListener("click", () => applyPaperFilters({ grade: button.dataset.paperGrade })));
+  root.querySelectorAll("[data-paper-source]").forEach(button => button.addEventListener("click", () => applyPaperFilters({ source: button.dataset.paperSource })));
+  root.querySelectorAll("[data-paper-sort]").forEach(button => button.addEventListener("click", () => applyPaperFilters({ sort: button.dataset.paperSort })));
+  root.querySelectorAll("[data-paper-search]").forEach(input => input.addEventListener("input", () => applyPaperFilters({ query: input.value })));
+  root.querySelectorAll(".paper-filter-select").forEach(button => button.addEventListener("click", () => showToast("地区筛选即将开放")));
 }
 
 function filterSeriesTopics(query) {
@@ -431,6 +655,7 @@ function filterSeriesTopics(query) {
 function setMainFilter(filter) {
   currentFilter = filter;
   currentQuery = "";
+  document.body.classList.toggle("is-paper-view", filter === "paper");
   document.querySelectorAll("[data-filter]").forEach(chip => { const active = chip.dataset.filter === filter; chip.classList.toggle("active", active); chip.setAttribute("aria-selected", String(active)); });
   render();
 }
