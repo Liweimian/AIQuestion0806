@@ -96,6 +96,56 @@ const paperSourceOptions = [
   { id: "district", label: "龙岗区私有库", match: topic => /龙岗/.test(`${topic.source} ${topic.author?.school || ""}`) },
   { id: "school", label: "本校私有库", match: topic => Boolean(topic.author) }
 ];
+const specialFilterState = { category: "all", difficulty: "all", query: "" };
+const specialKnowledgeModules = [
+  { id: "numbers", label: "数与式", match: topic => /有理数|整式|代数|数与式/.test(`${topic.title} ${topic.focus}`) },
+  { id: "equations", label: "方程（组）与不等式（组）", match: topic => /方程|不等式/.test(`${topic.title} ${topic.focus}`) },
+  { id: "functions", label: "函数", match: topic => /函数/.test(`${topic.title} ${topic.focus}`) },
+  { id: "geo-basic", label: "几何初步", match: topic => /几何初步|图形初步|直线|射线|线段|图形语言/.test(`${topic.title} ${topic.focus}`) },
+  { id: "triangle", label: "三角形", match: topic => /三角形|全等/.test(`${topic.title} ${topic.focus}`) },
+  { id: "quadrilateral", label: "四边形", match: topic => /四边形/.test(`${topic.title} ${topic.focus}`) },
+  { id: "circle", label: "圆", match: topic => /圆/.test(`${topic.title} ${topic.focus}`) },
+  { id: "shape-change", label: "图形的变化", match: topic => /图形的变化|轴对称|变换/.test(`${topic.title} ${topic.focus}`) },
+  { id: "statistics", label: "统计", match: topic => /统计/.test(`${topic.title} ${topic.focus}`) },
+  { id: "probability", label: "概率", match: topic => /概率/.test(`${topic.title} ${topic.focus}`) }
+];
+const specialStandaloneCategories = [
+  { id: "geo-model", label: "几何模型", match: topic => /几何模型|模型/.test(`${topic.title} ${topic.focus}`) },
+  { id: "calc-practice", label: "计算专练", match: topic => /运算|计算/.test(`${topic.title} ${topic.focus}`) },
+  { id: "hard-breakthrough", label: "难点突破", match: topic => /难点|压轴|培优|进阶|突破|较难/.test(`${topic.title} ${topic.focus} ${topic.difficulty}`) }
+];
+const specialDifficultyOptions = [
+  { id: "all", label: "全部" },
+  { id: "简单", label: "基础" },
+  { id: "中等", label: "中等" },
+  { id: "较难", label: "较难" }
+];
+const chapterFilterState = {
+  section: "1-1",
+  difficulty: "all",
+  source: "all",
+  query: "",
+  openChapters: ["ch1"]
+};
+const chapterText = topic => `${topic.title} ${topic.focus} ${topic.reason}`;
+const chapterNavTree = [
+  {
+    id: "ch1",
+    label: "第一章 有理数",
+    sections: [
+      { id: "1-1", label: "1.1 正数和负数", match: topic => /正负数|正数|负数|数轴/.test(chapterText(topic)) },
+      { id: "1-2", label: "1.2 有理数及其大小比较", match: topic => /大小比较|绝对值|相反数|有理数及其/.test(chapterText(topic)) },
+      { id: "1-summary", label: "小结", match: topic => /第1章|第一章|有理数/.test(chapterText(topic)) }
+    ]
+  },
+  { id: "ch2", label: "第二章 有理数的运算", match: topic => /第2章|第二章|混合运算|有理数.*运算|运算/.test(chapterText(topic)) },
+  { id: "prac1", label: "综合与实践 进位制的认识与探究", match: topic => /进位|进制/.test(chapterText(topic)) },
+  { id: "ch3", label: "第三章 代数式", match: topic => /第3章|第三章|代数式/.test(chapterText(topic)) },
+  { id: "ch4", label: "第四章 整式的加减", match: topic => /第4章|第四章|整式/.test(chapterText(topic)) },
+  { id: "ch5", label: "第五章 一元一次方程", match: topic => /第5章|第五章|方程/.test(chapterText(topic)) },
+  { id: "ch6", label: "第六章 几何图形初步", match: topic => /第6章|第六章|几何|图形|线段|角|立体/.test(chapterText(topic)) },
+  { id: "prac2", label: "综合与实践 设计学校田径运动会", match: topic => /田径|运动会|实践/.test(chapterText(topic)) }
+];
 
 const contentFeed = document.querySelector("#contentFeed");
 const emptyState = document.querySelector("#emptyState");
@@ -485,6 +535,266 @@ function applyPaperFilters(options = {}) {
   });
 }
 
+function specialTopics() {
+  return topics.filter(topic => topic.tag === "special");
+}
+
+function specialCategoryMatcher(category) {
+  if (category === "all") return () => true;
+  const item = [...specialKnowledgeModules, ...specialStandaloneCategories].find(entry => entry.id === category);
+  return item?.match ?? (() => true);
+}
+
+function specialCategoryLabel(category) {
+  if (category === "all") return "全部资源";
+  return [...specialKnowledgeModules, ...specialStandaloneCategories].find(entry => entry.id === category)?.label || "全部资源";
+}
+
+function filteredSpecialTopics() {
+  const keyword = specialFilterState.query.trim().toLowerCase();
+  const matcher = specialCategoryMatcher(specialFilterState.category);
+  return specialTopics()
+    .filter(topic => matcher(topic))
+    .filter(topic => specialFilterState.difficulty === "all" || topic.difficulty === specialFilterState.difficulty)
+    .filter(topic => !keyword || `${topic.title} ${topic.source} ${topic.focus}`.toLowerCase().includes(keyword))
+    .sort((a, b) => b.usage - a.usage);
+}
+
+function specialCategoryView() {
+  const list = filteredSpecialTopics();
+  const activeCategory = specialFilterState.category;
+  return `
+    <section class="category-detail special-category-view">
+      <div class="resource-browser special-browser">
+        <nav class="special-sidebar" aria-label="专项分类">
+          <button type="button" class="special-root ${activeCategory === "all" ? "active" : ""}" data-special-category="all">全部资源</button>
+          <div class="special-sidebar-group open">
+            <button class="special-sidebar-group-toggle" type="button" aria-expanded="true">
+              <i class="ri-arrow-down-s-line"></i><span>知识模块</span>
+            </button>
+            <div class="special-sidebar-items">
+              ${specialKnowledgeModules.map(item => `
+                <button type="button" class="${activeCategory === item.id ? "active" : ""}" data-special-category="${item.id}">${item.label}</button>
+              `).join("")}
+            </div>
+          </div>
+          ${specialStandaloneCategories.map(item => `
+            <button type="button" class="special-standalone ${activeCategory === item.id ? "active" : ""}" data-special-category="${item.id}">${item.label}</button>
+          `).join("")}
+        </nav>
+        <div class="special-browser-main">
+          <div class="special-filter-panel">
+            <div class="special-filter-row">
+              <span class="special-filter-label">难度</span>
+              <div class="special-filter-tags">
+                ${specialDifficultyOptions.map(option => `
+                  <button type="button" class="${specialFilterState.difficulty === option.id ? "active" : ""}" data-special-difficulty="${option.id}">${option.label}</button>
+                `).join("")}
+              </div>
+            </div>
+            <label class="paper-filter-search special-filter-search">
+              <span class="paper-filter-label">搜索</span>
+              <div class="paper-search-field">
+                <i class="ri-search-line"></i>
+                <input data-special-search type="search" value="${specialFilterState.query.replace(/"/g, "&quot;")}" placeholder="请输入题单名称或其他关键词进行搜索" />
+              </div>
+            </label>
+          </div>
+          <div class="special-list-toolbar">
+            <b>${specialCategoryLabel(activeCategory)}</b>
+            <span class="special-list-count" data-special-result-count>专项 共 ${list.length.toLocaleString()} 份</span>
+          </div>
+          <div class="resource-card-grid special-result-grid">${list.map(topic => topicCard(topic, { context: "special" })).join("")}</div>
+          <div class="special-empty" ${list.length ? "hidden" : ""}>没有找到匹配的专项题单，试试调整筛选条件。</div>
+        </div>
+      </div>
+    </section>`;
+}
+
+function applySpecialFilters(options = {}) {
+  if (options.category) specialFilterState.category = options.category;
+  if (options.difficulty) specialFilterState.difficulty = options.difficulty;
+  if (typeof options.query === "string") specialFilterState.query = options.query;
+
+  const panel = document.querySelector(".special-category-view");
+  if (!panel) return;
+
+  const list = filteredSpecialTopics();
+  panel.querySelectorAll("[data-special-category]").forEach(button => {
+    button.classList.toggle("active", button.dataset.specialCategory === specialFilterState.category);
+  });
+  panel.querySelectorAll("[data-special-difficulty]").forEach(button => {
+    button.classList.toggle("active", button.dataset.specialDifficulty === specialFilterState.difficulty);
+  });
+
+  const heading = panel.querySelector(".special-list-toolbar b");
+  if (heading) heading.textContent = specialCategoryLabel(specialFilterState.category);
+
+  const grid = panel.querySelector(".special-result-grid");
+  if (grid) {
+    grid.innerHTML = list.map(topic => topicCard(topic, { context: "special" })).join("");
+    bindContentEvents(grid);
+  }
+  const count = panel.querySelector("[data-special-result-count]");
+  if (count) count.textContent = `专项 共 ${list.length.toLocaleString()} 份`;
+  const empty = panel.querySelector(".special-empty");
+  if (empty) empty.hidden = list.length > 0;
+}
+
+function chapterSyncTopics() {
+  return topics.filter(topic => ["chapter", "school", "workbook"].includes(topic.tag));
+}
+
+function chapterSectionEntry(sectionId) {
+  if (sectionId === "all") return { id: "all", label: "全部资源", match: () => true };
+  for (const item of chapterNavTree) {
+    if (item.id === sectionId) return item;
+    const section = item.sections?.find(entry => entry.id === sectionId);
+    if (section) return section;
+  }
+  return { id: sectionId, label: "全部资源", match: () => true };
+}
+
+function chapterSectionLabel(sectionId) {
+  return chapterSectionEntry(sectionId).label;
+}
+
+function chapterParentId(sectionId) {
+  if (sectionId === "all") return null;
+  const parent = chapterNavTree.find(item => item.sections?.some(section => section.id === sectionId));
+  return parent?.id || null;
+}
+
+function chapterMatchesSection(topic, sectionId) {
+  if (sectionId === "all") return true;
+  const entry = chapterSectionEntry(sectionId);
+  if (entry.match?.(topic)) return true;
+  const parent = chapterNavTree.find(item => item.id === sectionId);
+  return parent?.match?.(topic) ?? false;
+}
+
+function filteredChapterTopics() {
+  const keyword = chapterFilterState.query.trim().toLowerCase();
+  return chapterSyncTopics()
+    .filter(topic => chapterMatchesSection(topic, chapterFilterState.section))
+    .filter(topic => chapterFilterState.difficulty === "all" || topic.difficulty === chapterFilterState.difficulty)
+    .filter(topic => paperMatchesSource(topic, chapterFilterState.source))
+    .filter(topic => !keyword || chapterText(topic).toLowerCase().includes(keyword))
+    .sort((a, b) => b.usage - a.usage);
+}
+
+function renderChapterSidebar() {
+  const activeSection = chapterFilterState.section;
+  const openChapters = new Set(chapterFilterState.openChapters);
+  const rootActive = activeSection === "all";
+  let html = `
+    <button class="chapter-textbook-select" type="button"><span>人教版/七年级上册 (2024)</span><i class="ri-arrow-down-s-line"></i></button>
+    <button type="button" class="chapter-root ${rootActive ? "active" : ""}" data-chapter-section="all">全部资源</button>`;
+
+  chapterNavTree.forEach(item => {
+    if (item.sections) {
+      const open = openChapters.has(item.id) || item.sections.some(section => section.id === activeSection);
+      html += `
+        <div class="chapter-sidebar-group ${open ? "open" : ""}">
+          <button class="chapter-sidebar-group-toggle" type="button" aria-expanded="${open}" data-chapter-toggle="${item.id}">
+            <i class="ri-${open ? "arrow-down-s" : "arrow-right-s"}-line"></i><span>${item.label}</span>
+          </button>
+          <div class="chapter-sidebar-items" ${open ? "" : "hidden"}>
+            ${item.sections.map(section => `
+              <button type="button" class="${activeSection === section.id ? "active" : ""}" data-chapter-section="${section.id}">${section.label}</button>
+            `).join("")}
+          </div>
+        </div>`;
+      return;
+    }
+    html += `<button type="button" class="chapter-leaf ${activeSection === item.id ? "active" : ""}" data-chapter-section="${item.id}">${item.label}</button>`;
+  });
+  return html;
+}
+
+function chapterCategoryView() {
+  const list = filteredChapterTopics();
+  return `
+    <section class="category-detail chapter-category-view">
+      <div class="resource-browser chapter-browser">
+        <nav class="chapter-sidebar" aria-label="教材章节">
+          ${renderChapterSidebar()}
+        </nav>
+        <div class="chapter-browser-main">
+          <div class="paper-filter-panel chapter-filter-panel">
+            ${paperFilterTagGroup("难度", specialDifficultyOptions, chapterFilterState.difficulty, "data-chapter-difficulty")}
+            ${paperFilterTagGroup("来源", paperSourceOptions, chapterFilterState.source, "data-chapter-source")}
+            <div class="paper-filter-row">
+              <span class="paper-filter-label">地区</span>
+              <button class="paper-filter-select chapter-filter-select" type="button"><span>深圳市龙岗区</span><i class="ri-arrow-down-s-line"></i></button>
+            </div>
+            <label class="paper-filter-search">
+              <span class="paper-filter-label">搜索</span>
+              <div class="paper-search-field">
+                <i class="ri-search-line"></i>
+                <input data-chapter-search type="search" value="${chapterFilterState.query.replace(/"/g, "&quot;")}" placeholder="请输入题单名称或其他关键词进行搜索" />
+              </div>
+            </label>
+          </div>
+          <div class="chapter-list-toolbar">
+            <b>${chapterSectionLabel(chapterFilterState.section)}</b>
+            <span class="chapter-list-count" data-chapter-result-count>同步练习 共 ${list.length.toLocaleString()} 份</span>
+          </div>
+          <div class="resource-card-grid chapter-result-grid">${list.map(topic => topicCard(topic, { context: "chapter" })).join("")}</div>
+          <div class="chapter-empty" ${list.length ? "hidden" : ""}>没有找到匹配的题单，试试调整筛选条件。</div>
+        </div>
+      </div>
+    </section>`;
+}
+
+function applyChapterFilters(options = {}) {
+  if (options.section) {
+    chapterFilterState.section = options.section;
+    const parentId = chapterParentId(options.section);
+    if (parentId && !chapterFilterState.openChapters.includes(parentId)) {
+      chapterFilterState.openChapters = [...chapterFilterState.openChapters, parentId];
+    }
+  }
+  if (options.difficulty) chapterFilterState.difficulty = options.difficulty;
+  if (options.source) chapterFilterState.source = options.source;
+  if (typeof options.query === "string") chapterFilterState.query = options.query;
+  if (options.toggleChapter) {
+    const open = new Set(chapterFilterState.openChapters);
+    if (open.has(options.toggleChapter)) open.delete(options.toggleChapter);
+    else open.add(options.toggleChapter);
+    chapterFilterState.openChapters = [...open];
+  }
+
+  const panel = document.querySelector(".chapter-category-view");
+  if (!panel) return;
+
+  const sidebar = panel.querySelector(".chapter-sidebar");
+  if (sidebar) sidebar.innerHTML = renderChapterSidebar();
+
+  const list = filteredChapterTopics();
+  panel.querySelectorAll("[data-chapter-difficulty]").forEach(button => {
+    button.classList.toggle("active", button.dataset.chapterDifficulty === chapterFilterState.difficulty);
+  });
+  panel.querySelectorAll("[data-chapter-source]").forEach(button => {
+    button.classList.toggle("active", button.dataset.chapterSource === chapterFilterState.source);
+  });
+
+  const heading = panel.querySelector(".chapter-list-toolbar b");
+  if (heading) heading.textContent = chapterSectionLabel(chapterFilterState.section);
+
+  const grid = panel.querySelector(".chapter-result-grid");
+  if (grid) {
+    grid.innerHTML = list.map(topic => topicCard(topic, { context: "chapter" })).join("");
+    bindContentEvents(grid);
+  }
+  const count = panel.querySelector("[data-chapter-result-count]");
+  if (count) count.textContent = `同步练习 共 ${list.length.toLocaleString()} 份`;
+  const empty = panel.querySelector(".chapter-empty");
+  if (empty) empty.hidden = list.length > 0;
+
+  bindContentEvents(sidebar);
+}
+
 function categoryBrowserView(kind) {
   const config = {
     chapter: { label:"同步练习", navLabel:"教材章节", nav:["正数与负数","有理数及其运算","整式的加减","一元一次方程","图形初步认识"], topics:["t8","t9","t10","t11","t12","t13"], chips:["全部同步", "课时练习", "单元检测", "易错巩固"], selector:"人教版七上" },
@@ -492,6 +802,8 @@ function categoryBrowserView(kind) {
     paper: { label:"试卷", navLabel:"考试类型", nav:["期末考试","期中考试","月考","单元测试","中考真题"], topics:["t2","t4","t6","t14","t25","t27","t33"], chips:["本地优先", "使用最多", "真题汇编"], selector:"深圳市 · 七年级数学" }
   }[kind];
   if (kind === "paper") return paperCategoryView();
+  if (kind === "special") return specialCategoryView();
+  if (kind === "chapter") return chapterCategoryView();
   const list = config.topics.map(id => byId[id]).filter(Boolean);
   return `
     <section class="category-detail unified-category-view">
@@ -641,6 +953,25 @@ function bindContentEvents(root = document) {
   root.querySelectorAll("[data-paper-sort]").forEach(button => button.addEventListener("click", () => applyPaperFilters({ sort: button.dataset.paperSort })));
   root.querySelectorAll("[data-paper-search]").forEach(input => input.addEventListener("input", () => applyPaperFilters({ query: input.value })));
   root.querySelectorAll(".paper-filter-select").forEach(button => button.addEventListener("click", () => showToast("地区筛选即将开放")));
+  root.querySelectorAll(".special-sidebar-group-toggle").forEach(button => button.addEventListener("click", () => {
+    const group = button.closest(".special-sidebar-group");
+    const open = !group.classList.contains("open");
+    group.classList.toggle("open", open);
+    button.setAttribute("aria-expanded", String(open));
+    const items = group.querySelector(".special-sidebar-items");
+    if (items) items.hidden = !open;
+    const icon = button.querySelector("i");
+    if (icon) icon.className = open ? "ri-arrow-down-s-line" : "ri-arrow-right-s-line";
+  }));
+  root.querySelectorAll("[data-special-category]").forEach(button => button.addEventListener("click", () => applySpecialFilters({ category: button.dataset.specialCategory })));
+  root.querySelectorAll("[data-special-difficulty]").forEach(button => button.addEventListener("click", () => applySpecialFilters({ difficulty: button.dataset.specialDifficulty })));
+  root.querySelectorAll("[data-special-search]").forEach(input => input.addEventListener("input", () => applySpecialFilters({ query: input.value })));
+  root.querySelectorAll(".chapter-textbook-select, .chapter-filter-select").forEach(button => button.addEventListener("click", () => showToast("教材与地区筛选即将开放")));
+  root.querySelectorAll("[data-chapter-toggle]").forEach(button => button.addEventListener("click", () => applyChapterFilters({ toggleChapter: button.dataset.chapterToggle })));
+  root.querySelectorAll("[data-chapter-section]").forEach(button => button.addEventListener("click", () => applyChapterFilters({ section: button.dataset.chapterSection })));
+  root.querySelectorAll("[data-chapter-difficulty]").forEach(button => button.addEventListener("click", () => applyChapterFilters({ difficulty: button.dataset.chapterDifficulty })));
+  root.querySelectorAll("[data-chapter-source]").forEach(button => button.addEventListener("click", () => applyChapterFilters({ source: button.dataset.chapterSource })));
+  root.querySelectorAll("[data-chapter-search]").forEach(input => input.addEventListener("input", () => applyChapterFilters({ query: input.value })));
 }
 
 function filterSeriesTopics(query) {
@@ -656,6 +987,8 @@ function setMainFilter(filter) {
   currentFilter = filter;
   currentQuery = "";
   document.body.classList.toggle("is-paper-view", filter === "paper");
+  document.body.classList.toggle("is-special-view", filter === "special");
+  document.body.classList.toggle("is-chapter-view", filter === "chapter");
   document.querySelectorAll("[data-filter]").forEach(chip => { const active = chip.dataset.filter === filter; chip.classList.toggle("active", active); chip.setAttribute("aria-selected", String(active)); });
   render();
 }
