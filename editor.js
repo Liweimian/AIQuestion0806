@@ -300,7 +300,7 @@ function initPageChrome() {
     backLink.href = `./detail-ai.html?topic=${encodeURIComponent(topicId)}&context=${encodeURIComponent(contextName)}${sourceTabId ? `&tabId=${encodeURIComponent(sourceTabId)}` : ""}`;
     backLink.innerHTML = '<i class="ri-folder-3-line"></i>返回试卷详情';
   } else {
-    backLink.href = `./detail.html?topic=${topicId}&context=${contextName}`;
+    backLink.href = `./detail-ai.html?topic=${encodeURIComponent(topicId)}&context=${encodeURIComponent(contextName)}`;
     backLink.innerHTML = '<i class="ri-folder-3-line"></i>返回题单详情';
   }
 }

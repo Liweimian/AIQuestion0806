@@ -7,7 +7,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         home: resolve(import.meta.dirname, "index.html"),
-        detail: resolve(import.meta.dirname, "detail.html"),
+        detailAi: resolve(import.meta.dirname, "detail-ai.html"),
         school: resolve(import.meta.dirname, "school.html"),
         editor: resolve(import.meta.dirname, "editor.html"),
       },
