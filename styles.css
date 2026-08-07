@@ -1269,6 +1269,10 @@ body.is-chapter-view .home-entry-row {
   display: none;
 }
 
+body.is-album-view .home-entry-row {
+  display: none;
+}
+
 body.is-paper-view .paper-category-view {
   margin-top: 0;
 }
@@ -1278,6 +1282,10 @@ body.is-special-view .special-category-view {
 }
 
 body.is-chapter-view .chapter-category-view {
+  margin-top: 0;
+}
+
+body.is-album-view .album-category-view {
   margin-top: 0;
 }
 
@@ -4735,6 +4743,10 @@ body {
   border-top: 1px solid var(--line-soft);
 }
 
+.special-filter-panel .special-filter-row {
+  border-top: 1px solid var(--line-soft);
+}
+
 .special-filter-label {
   color: #7b8781;
   font-size: 12px;
@@ -5023,6 +5035,153 @@ body {
   .chapter-sidebar {
     border-right: 0;
     border-bottom: 1px solid var(--line);
+  }
+}
+
+/* Album tab: by-album / by-topic sub views. */
+.album-category-view {
+  margin-top: 0;
+}
+
+.album-filter-panel {
+  margin-bottom: 12px;
+}
+
+.album-filter-panel .album-filter-search {
+  margin-top: 6px;
+  padding: 10px 0 2px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.album-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  min-height: 44px;
+  margin-bottom: 14px;
+  padding: 0 2px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.album-view-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.album-view-tabs button {
+  position: relative;
+  padding: 8px 0 12px;
+  color: #7b8781;
+  font-size: 14px;
+  border: 0;
+  background: transparent;
+}
+
+.album-view-tabs button.active {
+  color: var(--green-900);
+  font-weight: 650;
+}
+
+.album-view-tabs button.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 99px;
+  background: var(--green-900);
+}
+
+.album-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(100%, 320px);
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fafbfb;
+}
+
+.album-search i {
+  color: #9aa5a0;
+  font-size: 14px;
+}
+
+.album-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #26342e;
+  font: inherit;
+  font-size: 12px;
+}
+
+.album-search input::placeholder {
+  color: #a3aaa6;
+}
+
+.album-panel {
+  min-width: 0;
+}
+
+.album-grid {
+  margin-top: 4px;
+}
+
+.album-topic-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  margin-bottom: 12px;
+}
+
+.album-topic-meta b {
+  color: var(--green-900);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.album-topic-meta span {
+  color: #87918c;
+  font-size: 12px;
+}
+
+.album-empty {
+  margin-top: 18px;
+  padding: 28px 16px;
+  color: #87918c;
+  font-size: 12px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  background: #fafbfb;
+}
+
+@media (max-width: 760px) {
+  .album-toolbar {
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 900px) {
+  .album-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .album-grid,
+  .album-topic-grid {
+    grid-template-columns: 1fr;
   }
 }
 
