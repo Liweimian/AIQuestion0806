@@ -456,7 +456,7 @@ function openTopic(id) {
     source: topic.source,
     usage: String(topic.usage)
   });
-  location.href = `./${context === "paper" || context === "series" ? "detail-ai" : "detail"}.html?${qs.toString()}`;
+  location.href = `./detail-ai.html?${qs.toString()}`;
 }
 
 function showAiDock(visible) {
